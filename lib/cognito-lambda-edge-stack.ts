@@ -47,7 +47,7 @@ export class CognitoLambdaEdgeStack extends cdk.Stack {
     roleLambdaedge.addManagedPolicy(policyLambdaedge);
 
     const lambdaAuthCheck = new NodejsFunction(this, "lambdaAuthCheck", {
-      entry: "src/authcheck/app.ts",
+      entry: "src/auth_check/app.ts",
       handler: "app.handler",
       functionName: `${system}-${stage}-lambda-checkauth`,
       runtime: Runtime.NODEJS_18_X,
