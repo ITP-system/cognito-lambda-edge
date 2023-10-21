@@ -1,23 +1,30 @@
-import * as cdk from "aws-cdk-lib";
+import { Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
-import * as iam from "aws-cdk-lib/aws-iam";
+import {
+  CompositePrincipal,
+  Effect,
+  ManagedPolicy,
+  PolicyStatement,
+  Role,
+  ServicePrincipal,
+} from "aws-cdk-lib/aws-iam";
 
-export class CognitoLambdaEdgeStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+export class CognitoLambdaEdgeStack extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
     const stage = this.node.tryGetContext("stage");
     const context = this.node.tryGetContext(stage);
     const system = context["system"];
 
-    const policyLambdaedge = new iam.ManagedPolicy(this, "policyLambdaedge", {
+    const policyLambdaedge = new ManagedPolicy(this, "policyLambdaedge", {
       managedPolicyName: `${system}-${stage}-policy-lambdaedge`,
       description: "Lambda edge execution policy",
       statements: [
-        new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
+        new PolicyStatement({
+          effect: Effect.ALLOW,
           actions: [
             "lambda:GetFunction",
             "lambda:EnableReplication*",
@@ -30,16 +37,16 @@ export class CognitoLambdaEdgeStack extends cdk.Stack {
       ],
     });
 
-    const roleLambdaedge = new iam.Role(this, "roleLambdaedge", {
+    const roleLambdaedge = new Role(this, "roleLambdaedge", {
       roleName: `${system}-${stage}-role-lambdaedge`,
-      assumedBy: new iam.CompositePrincipal(
-        new iam.ServicePrincipal("lambda.amazonaws.com"),
-        new iam.ServicePrincipal("edgelambda.amazonaws.com")
+      assumedBy: new CompositePrincipal(
+        new ServicePrincipal("lambda.amazonaws.com"),
+        new ServicePrincipal("edgelambda.amazonaws.com")
       ),
     });
 
     roleLambdaedge.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
+      ManagedPolicy.fromAwsManagedPolicyName(
         "service-role/AWSLambdaBasicExecutionRole"
       )
     );
