@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
-import { CognitoLambdaEdgeStack } from "../lib/cognito-lambda-edge-stack";
+import { AuthCheckStack } from "../lib/auth-check-stack";
+import { AuthUiStack } from "../lib/auth-ui-stack";
 
 const app = new cdk.App();
 
@@ -14,9 +15,16 @@ if (stage == undefined)
 const context = app.node.tryGetContext(stage);
 if (context == undefined) throw new Error("Invalid stage.");
 
-new CognitoLambdaEdgeStack(app, `CognitoLambdaEdgeStack-${stage}`, {
+const authCheckStack = new AuthCheckStack(app, `AuthCheckStack-${stage}`, {
   env: {
     account: context["env"]["account"],
     region: "us-east-1",
+  },
+});
+
+const authUiStack = new AuthUiStack(app, `AuthUiStack-${stage}`, {
+  env: {
+    account: context["env"]["account"],
+    region: context["env"]["region"],
   },
 });

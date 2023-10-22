@@ -11,7 +11,7 @@ import {
   ServicePrincipal,
 } from "aws-cdk-lib/aws-iam";
 
-export class CognitoLambdaEdgeStack extends Stack {
+export class AuthCheckStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
@@ -19,7 +19,7 @@ export class CognitoLambdaEdgeStack extends Stack {
     const context = this.node.tryGetContext(stage);
     const system = context["system"];
 
-    const policyLambdaedge = new ManagedPolicy(this, "policyLambdaedge", {
+    const policyLambdaedge = new ManagedPolicy(this, "PolicyLambdaedge", {
       managedPolicyName: `${system}-${stage}-policy-lambdaedge`,
       description: "Lambda edge execution policy",
       statements: [
@@ -37,7 +37,7 @@ export class CognitoLambdaEdgeStack extends Stack {
       ],
     });
 
-    const roleLambdaedge = new Role(this, "roleLambdaedge", {
+    const roleLambdaedge = new Role(this, "RoleLambdaedge", {
       roleName: `${system}-${stage}-role-lambdaedge`,
       assumedBy: new CompositePrincipal(
         new ServicePrincipal("lambda.amazonaws.com"),
@@ -53,10 +53,10 @@ export class CognitoLambdaEdgeStack extends Stack {
 
     roleLambdaedge.addManagedPolicy(policyLambdaedge);
 
-    const lambdaAuthCheck = new NodejsFunction(this, "lambdaAuthCheck", {
+    const lambdaAuthCheck = new NodejsFunction(this, "LambdaAuthCheck", {
       entry: "src/auth_check/app.ts",
       handler: "app.handler",
-      functionName: `${system}-${stage}-lambda-checkauth`,
+      functionName: `${system}-${stage}-lambda-authcheck`,
       runtime: Runtime.NODEJS_18_X,
       bundling: {
         minify: true,

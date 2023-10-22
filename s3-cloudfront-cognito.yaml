@@ -1,0 +1,225 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Create an S3 bucket and CloudFront (OAC) for hosting a static website with Cognito authentification
+
+Parameters:
+  SystemName:
+    Description: System Name
+    Type: String
+
+Resources:
+  #-----------------------------------------------------------------------------
+  # S3 bucket
+  #-----------------------------------------------------------------------------
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${SystemName}-bucket
+      Tags:
+        - Key: Name
+          Value: !Sub ${SystemName}-bucket
+
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - s3:GetObject
+            Effect: Allow
+            Resource:
+              - !Sub arn:aws:s3:::${S3Bucket}/*
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}
+
+  #-----------------------------------------------------------------------------
+  # CloudFront
+  #-----------------------------------------------------------------------------
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: !Sub ${SystemName}-distribution
+        Origins:
+          - DomainName: !GetAtt S3Bucket.RegionalDomainName
+            Id: S3Origin
+            OriginAccessControlId: !GetAtt OAC.Id
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+        Enabled: true
+        DefaultRootObject: index.html
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          Compress: true
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # CachingOptimized (Recommended for S3)
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+          CachedMethods:
+            - GET
+            - HEAD
+        PriceClass: PriceClass_All
+
+  OAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Description: Access Control
+        Name: !Sub ${SystemName}-oac
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  #-----------------------------------------------------------------------------
+  # Cognito User pool
+  #-----------------------------------------------------------------------------
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub ${SystemName}-user-pool
+
+  CognitoUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Sub ${SystemName}
+      UserPoolId: !Ref CognitoUserPool
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub ${SystemName}-client
+      UserPoolId: !Ref CognitoUserPool
+
+  IdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      # 認証されていないIDへのアクセスを許可
+      AllowUnauthenticatedIdentities: true
+      CognitoIdentityProviders:
+        - ClientId: !Ref CognitoUserPoolClient
+          ProviderName: !Sub "cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
+      # IDプール名
+      IdentityPoolName: "IdentityPoolName"
+
+  # 未認証ユーザ用ポリシー
+  CognitoUnauthenticatedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: "UnauthenticatedPolicy for Cognito ID Pool."
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - iot:Connect
+              - iot:Subscribe
+              - iot:Receive
+              - iot:Get*
+              - cognito-sync:*
+              - cognito-identity:*
+            Resource:
+              - "*"
+  # 未認証ユーザ用ロール
+  CognitoUnauthenticatedRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: "UnauthenticatedRole for Cognito ID Pool."
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "sts:AssumeRoleWithWebIdentity"
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Condition:
+              StringEquals:
+                "cognito-identity.amazonaws.com:aud":
+                  Ref: IdentityPool
+              ForAnyValue:StringLike:
+                "cognito-identity.amazonaws.com:amr": unauthenticated
+      ManagedPolicyArns:
+        - Ref: CognitoUnauthenticatedPolicy
+
+  # 認証済ユーザ用ポリシー
+  CognitoAuthenticatedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: "AuthenticatedPolicy for Cognito ID Pool."
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - iot:Connect
+              - iot:Subscribe
+              - iot:Receive
+              - iot:Get*
+              - cognito-sync:*
+              - cognito-identity:*
+            Resource:
+              - "*"
+
+  # 認証済ユーザ用ロール
+  CognitoAuthenticatedRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: "AuthenticatedRole for Cognito ID Pool."
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "sts:AssumeRoleWithWebIdentity"
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Condition:
+              StringEquals:
+                "cognito-identity.amazonaws.com:aud":
+                  Ref: IdentityPool
+              ForAnyValue:StringLike:
+                "cognito-identity.amazonaws.com:amr": authenticated
+      ManagedPolicyArns:
+        - Ref: CognitoAuthenticatedPolicy
+
+  # CognitoIDプールに認証・未認証ユーザ用ロールをアタッチ
+  RoleAttachment:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    Properties:
+      IdentityPoolId:
+        Ref: IdentityPool
+      Roles:
+        unauthenticated:
+          Fn::GetAtt:
+            - CognitoUnauthenticatedRole
+            - Arn
+        authenticated:
+          Fn::GetAtt:
+            - CognitoAuthenticatedRole
+            - Arn
+
+Outputs:
+  CloudFrontDomainName:
+    Value: !GetAtt CloudFrontDistribution.DomainName
+    Export:
+      Name: !Sub ${SystemName}-domain-name
+  UserPool:
+    Value: !Ref CognitoUserPool
+    Export:
+      Name: !Sub ${SystemName}-user-pool
+  UserPoolClient:
+    Value: !Ref CognitoUserPoolClient
+    Export:
+      Name: !Sub ${SystemName}-user-pool-client
+  UserPoolDomain:
+    Value: !Ref CognitoUserPoolDomain
+    Export:
+      Name: !Sub ${SystemName}-user-pool-domain

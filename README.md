@@ -75,3 +75,11 @@ CloudFront/Lambda@Edge/Cognito で 静的サイト　や SPA/SSR サイトを保
 1. [CloudFront Lambda@Edge](https://docs.aws.amazon.com/lambda/latest/dg/lambda-edge.html)
 
 1. [Token endpoint](https://docs.aws.amazon.com/cognito/latest/developerguide/token-endpoint.html)
+
+## 注意
+
+- cdk のブートストラップが必要です
+  ブートストラップの方法は以下を参考にしてください
+  [ブートストラップ]{https://docs.aws.amazon.com/cdk/v2/guide/cli.html#cli-bootstrap)
+
+cdk deploy '\*' --require-approval never
