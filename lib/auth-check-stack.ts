@@ -1,7 +1,7 @@
 import { Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import { Runtime } from "aws-cdk-lib/aws-lambda";
+import { Runtime, Version } from "aws-cdk-lib/aws-lambda";
 import {
   CompositePrincipal,
   Effect,
@@ -54,8 +54,9 @@ export class AuthCheckStack extends Stack {
     roleLambdaedge.addManagedPolicy(policyLambdaedge);
 
     const lambdaAuthCheck = new NodejsFunction(this, "LambdaAuthCheck", {
+      awsSdkConnectionReuse: false,
       entry: "src/auth_check/app.ts",
-      handler: "app.handler",
+      handler: "handler",
       functionName: `${system}-${stage}-lambda-authcheck`,
       runtime: Runtime.NODEJS_18_X,
       bundling: {
@@ -70,5 +71,9 @@ export class AuthCheckStack extends Stack {
       },
       role: roleLambdaedge,
     });
+
+    // const ambdaAuthCheckVersion = new Version(this, "LambdaAuthCheckVersion", {
+    //   lambda: lambdaAuthCheck,
+    // });
   }
 }
