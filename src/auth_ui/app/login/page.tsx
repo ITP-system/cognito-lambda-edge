@@ -1,15 +1,16 @@
-"use client"
-import { Amplify } from "aws-amplify"
+"use client";
+import { Amplify } from "aws-amplify";
 import awsExports from "../../src/aws-exports";
-Amplify.configure({ ...awsExports,
-    ssr: true,
-    cookieStorage: {
-    domain: 'd7js4v6gxx5rt.cloudfront.net',
-    path: '/',
+
+Amplify.configure({
+  ...awsExports,
+  cookieStorage: {
+    domain: process.env.CLOUD_FRONT_DOMAIN,
+    path: "/",
     expires: 365,
-    secure: true
-  }
-  });
+    secure: true,
+  },
+});
 
 import { Authenticator } from "@aws-amplify/ui-react";
 import "@aws-amplify/ui-react/styles.css";

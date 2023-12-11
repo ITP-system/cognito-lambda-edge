@@ -1,6 +1,11 @@
 FROM public.ecr.aws/lambda/nodejs:18 as builder
 WORKDIR /app
 
+ARG CLOUD_FRONT_DOMAIN
+RUN touch .env.production
+RUN echo "CLOUD_FRONT_DOMAIN=$CLOUD_FRONT_DOMAIN" >> .env.production
+RUN cat .env.production
+
 COPY . .
 RUN npm update && npm run build
 
