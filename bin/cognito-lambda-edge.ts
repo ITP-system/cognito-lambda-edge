@@ -3,6 +3,7 @@ import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { AuthCheckStack } from "../lib/auth-check-stack";
 import { AuthUiStack } from "../lib/auth-ui-stack";
+import { AuthChallengeStack } from "../lib/auth-challenge-stack";
 
 const app = new cdk.App();
 
@@ -28,3 +29,14 @@ const authUiStack = new AuthUiStack(app, `AuthUiStack-${stage}`, {
     region: context["env"]["region"],
   },
 });
+
+const authChallengeStack = new AuthChallengeStack(
+  app,
+  `AuthChallengeStack-${stage}`,
+  {
+    env: {
+      account: context["env"]["account"],
+      region: context["env"]["region"],
+    },
+  }
+);
