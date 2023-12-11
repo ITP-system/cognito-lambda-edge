@@ -1,0 +1,101 @@
+{
+  "auth": {
+    "authuiaa571483": {
+      "customAuth": false,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito",
+      "serviceType": "imported"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_auth_authuiaa571483_allowUnauthenticatedIdentities": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "authuiaa571483"
+        }
+      ]
+    },
+    "AMPLIFY_auth_authuiaa571483_authRoleArn": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "authuiaa571483"
+        }
+      ]
+    },
+    "AMPLIFY_auth_authuiaa571483_authRoleName": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "authuiaa571483"
+        }
+      ]
+    },
+    "AMPLIFY_auth_authuiaa571483_identityPoolId": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "authuiaa571483"
+        }
+      ]
+    },
+    "AMPLIFY_auth_authuiaa571483_identityPoolName": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "authuiaa571483"
+        }
+      ]
+    },
+    "AMPLIFY_auth_authuiaa571483_nativeClientId": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "authuiaa571483"
+        }
+      ]
+    },
+    "AMPLIFY_auth_authuiaa571483_unauthRoleArn": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "authuiaa571483"
+        }
+      ]
+    },
+    "AMPLIFY_auth_authuiaa571483_unauthRoleName": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "authuiaa571483"
+        }
+      ]
+    },
+    "AMPLIFY_auth_authuiaa571483_userPoolId": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "authuiaa571483"
+        }
+      ]
+    },
+    "AMPLIFY_auth_authuiaa571483_userPoolName": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "authuiaa571483"
+        }
+      ]
+    },
+    "AMPLIFY_auth_authuiaa571483_webClientId": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "authuiaa571483"
+        }
+      ]
+    }
+  }
+}
