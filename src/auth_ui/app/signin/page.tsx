@@ -18,18 +18,15 @@ import { Input } from "@/components/ui/input";
 
 import { Amplify } from "aws-amplify";
 import awsExports from "../../src/aws-exports";
-import { signIn, type SignInInput } from "aws-amplify/auth";
+import { signIn } from "aws-amplify/auth";
+import { CookieStorage } from "aws-amplify/utils";
+import { cognitoUserPoolsTokenProvider } from "aws-amplify/auth/cognito";
 
 Amplify.configure({
   ...awsExports,
-  //  authenticationFlowType: "CUSTOM_AUTH",
-  // cookieStorage: {
-  //   domain: process.env.CLOUD_FRONT_DOMAIN,
-  //   path: "/",
-  //   expires: 365,
-  //   secure: true,
-  // },
 });
+
+cognitoUserPoolsTokenProvider.setKeyValueStorage(new CookieStorage());
 
 const formSchema = z.object({
   username: z.string().min(2, {

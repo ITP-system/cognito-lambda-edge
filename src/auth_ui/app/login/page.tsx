@@ -1,16 +1,14 @@
 "use client";
 import { Amplify } from "aws-amplify";
 import awsExports from "../../src/aws-exports";
+import { CookieStorage } from "aws-amplify/utils";
+import { cognitoUserPoolsTokenProvider } from "aws-amplify/auth/cognito";
 
 Amplify.configure({
   ...awsExports,
-  cookieStorage: {
-    domain: process.env.CLOUD_FRONT_DOMAIN,
-    path: "/",
-    expires: 365,
-    secure: true,
-  },
 });
+
+cognitoUserPoolsTokenProvider.setKeyValueStorage(new CookieStorage());
 
 import { Authenticator } from "@aws-amplify/ui-react";
 import "@aws-amplify/ui-react/styles.css";
