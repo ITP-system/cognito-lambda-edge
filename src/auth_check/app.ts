@@ -2,7 +2,6 @@ import { CloudFrontRequestHandler, CloudFrontHeaders } from "aws-lambda";
 import { CognitoJwtVerifier } from "aws-jwt-verify";
 import { Logger } from "@aws-lambda-powertools/logger";
 import { parse } from "cookie";
-
 import jwt_decode from "jwt-decode";
 
 type Cookies = { [key: string]: string };
