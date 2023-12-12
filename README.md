@@ -82,4 +82,4 @@ CloudFront/Lambda@Edge/Cognito で 静的サイト　や SPA/SSR サイトを保
   ブートストラップの方法は以下を参考にしてください
   [ブートストラップ]{https://docs.aws.amazon.com/cdk/v2/guide/cli.html#cli-bootstrap)
 
-cdk deploy '\*' --require-approval never
+cdk deploy --context stage=dev --all
