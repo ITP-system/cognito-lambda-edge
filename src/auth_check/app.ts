@@ -1,17 +1,11 @@
 import { CloudFrontRequestHandler, CloudFrontHeaders } from "aws-lambda";
 import { CognitoJwtVerifier } from "aws-jwt-verify";
 import { Logger } from "@aws-lambda-powertools/logger";
-import jwt_decode from "jwt-decode";
 import { parse } from "cookie";
 
-type Cookies = { [key: string]: string };
+import jwt_decode from "jwt-decode";
 
-type CookieSettings = {
-  idToken: string;
-  accessToken: string;
-  refreshToken: string;
-  [key: string]: string;
-};
+type Cookies = { [key: string]: string };
 
 const logger = new Logger({
   logLevel: "DEBUG",
@@ -27,6 +21,10 @@ const config = {
 
 export const handler: CloudFrontRequestHandler = async (event) => {
   const request = event.Records[0].cf.request;
+  const requestUri = request.uri;
+  const requestQueryString = request.querystring;
+
+  logger.debug("New request", { custom_key: request });
 
   try {
     const cookies = extractAndParseCookies(
@@ -69,7 +67,9 @@ export const handler: CloudFrontRequestHandler = async (event) => {
           location: [
             {
               key: "location",
-              value: `https://${config.cloudFrontDomain}`,
+              value: requestQueryString
+                ? `https://${config.cloudFrontDomain}${requestUri}/?${requestQueryString}`
+                : `https://${config.cloudFrontDomain}${requestUri}`,
             },
           ],
           "set-cookie": generateCookieHeaders(
@@ -134,7 +134,6 @@ export function extractAndParseCookies(
 
   const cookieNames: { [name: string]: string } = {
     lastUserKey,
-    userDataKey: `${keyPrefix}.${tokenUserName}.userData`,
     idTokenKey: `${keyPrefix}.${tokenUserName}.idToken`,
     accessTokenKey: `${keyPrefix}.${tokenUserName}.accessToken`,
     refreshTokenKey: `${keyPrefix}.${tokenUserName}.refreshToken`,
@@ -197,12 +196,6 @@ function generateCookieHeaders(
   refreshToken: string,
   client_id: string
 ) {
-  const cookieSettings: CookieSettings = {
-    idToken: `Domain=.${config.cloudFrontDomain}; Path=/; Secure;`,
-    accessToken: `Domain=.${config.cloudFrontDomain}; Path=/; Secure;`,
-    refreshToken: `Domain=.${config.cloudFrontDomain}; Path=/; Secure;`,
-  };
-
   const expire = new Date(Date.now() + 365 * 864e5);
 
   const keyPrefix = `CognitoIdentityServiceProvider.${client_id}`;
@@ -213,7 +206,6 @@ function generateCookieHeaders(
 
   const cookieNames = {
     lastUserKey,
-    userDataKey: `${keyPrefix}.${tokenUserName}.userData`,
     idTokenKey: `${keyPrefix}.${tokenUserName}.idToken`,
     accessTokenKey: `${keyPrefix}.${tokenUserName}.accessToken`,
     refreshTokenKey: `${keyPrefix}.${tokenUserName}.refreshToken`,
@@ -221,46 +213,26 @@ function generateCookieHeaders(
 
   const cookies: Cookies = {};
 
-  const userData = JSON.stringify({
-    UserAttributes: [
-      {
-        Name: "sub",
-        Value: decodedIdToken["sub"],
-      },
-      {
-        Name: "email",
-        Value: decodedIdToken["email"],
-      },
-    ],
-    Username: tokenUserName,
-  });
-
   // Construct object with the cookies
   Object.assign(cookies, {
-    [cookieNames.lastUserKey]: `${tokenUserName}; ${
-      cookieSettings.idToken
-    } Expires=${expire.toUTCString()}`,
-    [cookieNames.userDataKey]: `${encodeURIComponent(userData)}; ${
-      cookieSettings.idToken
-    } Expires=${expire.toUTCString()}`,
-    "amplify-signin-with-hostedUI": `false; ${
-      cookieSettings.accessToken
-    } Expires=${expire.toUTCString()}`,
+    [cookieNames.lastUserKey]: `${tokenUserName}; Path=/; Secure; Expires=${expire.toUTCString()}`,
   });
 
   // Set JWTs in the cookies
-  cookies[cookieNames.idTokenKey] = `${idToken}; ${
-    cookieSettings.idToken
-  } Expires=${expire.toUTCString()}`;
+  cookies[
+    cookieNames.idTokenKey
+  ] = `${idToken}; Path=/; Secure; Expires=${expire.toUTCString()}`;
+
   if (accessToken) {
-    cookies[cookieNames.accessTokenKey] = `${accessToken}; ${
-      cookieSettings.accessToken
-    } Expires=${expire.toUTCString()}`;
+    cookies[
+      cookieNames.accessTokenKey
+    ] = `${accessToken}; Path=/; Secure; Expires=${expire.toUTCString()}`;
   }
+
   if (refreshToken) {
-    cookies[cookieNames.refreshTokenKey] = `${refreshToken}; ${
-      cookieSettings.refreshToken
-    } Expires=${expire.toUTCString()}`;
+    cookies[
+      cookieNames.refreshTokenKey
+    ] = `${refreshToken}; Path=/; Secure; Expires=${expire.toUTCString()}`;
   }
 
   // Return cookie object in format of CloudFront headers
