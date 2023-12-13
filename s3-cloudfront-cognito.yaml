@@ -6,6 +6,7 @@ Parameters:
   SystemName:
     Description: System Name
     Type: String
+    Default: "lambdaedge-auth"
 
 Resources:
   #-----------------------------------------------------------------------------
@@ -109,7 +110,7 @@ Resources:
         - ClientId: !Ref CognitoUserPoolClient
           ProviderName: !Sub "cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
       # IDプール名
-      IdentityPoolName: "IdentityPoolName"
+      IdentityPoolName: "IdentityPoolName1"
 
   # 未認証ユーザ用ポリシー
   CognitoUnauthenticatedPolicy:

@@ -47,9 +47,13 @@ CloudFront/Lambda@Edge/Cognito で 静的サイト　や SPA/SSR サイトを保
   - AWS::Lambda::Function
   - AWS::IAM::Role
 
+```
+$ aws cloudformation deploy --template ./s3-cloudfront-cognito.yaml --stack-name cognito-lambda-edge --capabilities CAPABILITY_NAMED_IAM
+```
+
 ## デプロイ
 
-- `cdk deploy -c stage=dev` deploy this stack to your default AWS account/region
+- `cdk deploy -c stage=dev --all` deploy this stack to your default AWS account/region
 
 - AWS Console in us-east-1 -> Lambda -> "${SystemName}-lambda-edge"
 - Add trigger
@@ -81,5 +85,3 @@ CloudFront/Lambda@Edge/Cognito で 静的サイト　や SPA/SSR サイトを保
 - cdk のブートストラップが必要です
   ブートストラップの方法は以下を参考にしてください
   [ブートストラップ]{https://docs.aws.amazon.com/cdk/v2/guide/cli.html#cli-bootstrap)
-
-cdk deploy --context stage=dev --all
