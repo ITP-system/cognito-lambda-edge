@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import React from "react";
 
 // component
@@ -40,6 +42,10 @@ type UserDataType = {
 };
 
 async function getData() {
+  // await fetch("", {
+  //   cache: "no-store",
+  // });
+
   return data;
 }
 
