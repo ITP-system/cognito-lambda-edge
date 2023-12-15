@@ -16,6 +16,7 @@ const logger = new Logger({
 });
 
 const config = {
+  userPoolId: __USER_POOL_ID__,
   userPoolAppId: __USER_POOL_APP_ID__,
   identityPoolId: __IDENTITY_POOL_ID__,
   cloudFrontDomain: __CLOUD_FRONT_DOMAIN__,
@@ -49,16 +50,35 @@ export const handler: CloudFrontRequestHandler = async (event) => {
 
   // sign the request with Signature V4 and the credentials of the edge function itself
   // the edge function must have lambda:InvokeFunctionUrl permission for the target URL
+
+  let credential;
+
+  if (cookies.idToken) {
+    credential = fromCognitoIdentityPool({
+      clientConfig: {
+        region: "ap-northeast-1",
+      },
+      identityPoolId: config.identityPoolId,
+      logins: {
+        [`cognito-idp.ap-northeast-1.amazonaws.com/${config.userPoolId}`]:
+          cookies.idToken,
+      },
+    });
+  } else {
+    credential = fromCognitoIdentityPool({
+      clientConfig: {
+        region: "ap-northeast-1",
+      },
+      identityPoolId: config.identityPoolId,
+    });
+  }
+
   const signer = new SignatureV4({
     region: "ap-northeast-1",
     service: "lambda",
     sha256: Sha256,
-    credentials: fromCognitoIdentityPool({
-      identityPoolId: config.identityPoolId,
-      clientConfig: {
-        region: "ap-northeast-1",
-      },
-    }),
+
+    credentials: credential,
   });
 
   const signedReq = await signer.sign(reqForSign);
