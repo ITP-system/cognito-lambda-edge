@@ -8,11 +8,50 @@ import UserList from "./component/userlist";
 const data: UserDataType = {
   Users: [
     {
-      Username: "test_user_name",
+      Username: "test_user_name1",
       Attributes: [
         {
           Name: "email",
-          Value: "test_user@email.address",
+          Value: "test_user1@email.address",
+        },
+      ],
+      UserCreateDate: "2023-12-31T10:00:00.000000+09:00",
+      UserLastModifiedDate: "2023-12-31T10:00:00.000000+09:00",
+      Enabled: true,
+      UserStatus: "Test",
+    },
+    {
+      Username: "test_user_name2",
+      Attributes: [
+        {
+          Name: "email",
+          Value: "test_user2@email.address",
+        },
+      ],
+      UserCreateDate: "2023-12-31T10:00:00.000000+09:00",
+      UserLastModifiedDate: "2023-12-31T10:00:00.000000+09:00",
+      Enabled: true,
+      UserStatus: "Test",
+    },
+    {
+      Username: "test_user_name3",
+      Attributes: [
+        {
+          Name: "email",
+          Value: "test_user3@email.address",
+        },
+      ],
+      UserCreateDate: "2023-12-31T10:00:00.000000+09:00",
+      UserLastModifiedDate: "2023-12-31T10:00:00.000000+09:00",
+      Enabled: true,
+      UserStatus: "Test",
+    },
+    {
+      Username: "test_user_name4",
+      Attributes: [
+        {
+          Name: "email",
+          Value: "test_user4@email.address",
         },
       ],
       UserCreateDate: "2023-12-31T10:00:00.000000+09:00",
