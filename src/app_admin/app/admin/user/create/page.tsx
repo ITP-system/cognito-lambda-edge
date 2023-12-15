@@ -1,5 +1,5 @@
 "use client";
-import { userCreateForm } from "@/components/common/formActions/userForm";
+import { userCreateFormAction } from "@/components/common/formActions/userForm";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -29,7 +29,7 @@ const formSchema = z.object({
   }),
 });
 
-export default function ProfileForm() {
+export default function CreateUserForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -48,7 +48,7 @@ export default function ProfileForm() {
         <Form {...form}>
           <form
             action={async (FormData) => {
-              await userCreateForm(FormData);
+              await userCreateFormAction(FormData);
             }}
             className="space-y-3"
           >

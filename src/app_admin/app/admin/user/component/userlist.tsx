@@ -3,6 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 
+// server action
+import { userDereteAction } from "@/components/common/formActions/userForm";
+
 // tanstack
 import {
   ColumnDef,
@@ -92,6 +95,7 @@ export const columns: ColumnDef<UsersType>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="p-0"
         >
           Email
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -112,11 +116,11 @@ export const columns: ColumnDef<UsersType>[] = [
   },
   {
     accessorKey: "UserCreateDate",
-    header: () => <div className="text-right">作成日</div>,
+    header: () => <div>作成日</div>,
     cell: ({ row }) => {
       const user_create_date = new Date(row.getValue("UserCreateDate"));
       return (
-        <div className="text-right font-medium">
+        <div className="font-medium">
           {String(user_create_date.toLocaleString())}
         </div>
       );
@@ -157,7 +161,7 @@ export default function DataTableDemo({ userData }: { userData: UsersType[] }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
+  const [rowSelection, setRowSelection] = useState<any>({});
   const [tableData, setTableData] = useState<UsersType[]>(userData);
 
   const table = useReactTable({
@@ -179,10 +183,18 @@ export default function DataTableDemo({ userData }: { userData: UsersType[] }) {
     },
   });
 
-  const deleteUser = () => {};
+  const deleteUser = async () => {
+    let deleteuser: any = [];
+    for (const property in rowSelection) {
+      deleteuser.push(tableData[Number(property)]);
+    }
+
+    await userDereteAction(deleteuser);
+  };
 
   return (
     <div className="w-full">
+      {/* userアクション */}
       <div className="flex items-center py-4">
         <div></div>
         <DropdownMenu>
@@ -208,6 +220,8 @@ export default function DataTableDemo({ userData }: { userData: UsersType[] }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* 一覧表示 */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -258,9 +272,11 @@ export default function DataTableDemo({ userData }: { userData: UsersType[] }) {
           </TableBody>
         </Table>
       </div>
+
+      {/* ページネーション */}
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredSelectedRowModel().rows.length} of
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
         <div className="space-x-2 flex items-center">
