@@ -154,7 +154,7 @@ export function extractAndParseCookies(
 async function refreshToken(
   refreshToken: string,
   client_id: string
-): Promise<any> {
+): Promise<{ id_token: string; access_token: string; refresh_token: string }> {
   try {
     const token_endpoint = `https://${config.userPoolDomain}/oauth2/token`;
     const res = await fetch(token_endpoint, {
@@ -176,9 +176,10 @@ async function refreshToken(
     }
 
     return newTokens;
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error(`${error.message} with a custom key`, { custom_key: error });
-    return {};
+
+    throw new Error(error.message);
   }
 }
 
