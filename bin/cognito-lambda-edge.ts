@@ -4,6 +4,7 @@ import * as cdk from "aws-cdk-lib";
 import { AuthCheckStack } from "../lib/auth-check-stack";
 import { AuthSigV4Stack } from "../lib/auth-sigv4-stack";
 import { AuthUiStack } from "../lib/auth-ui-stack";
+import { AppAdminStack } from "../lib/app-admin-stack";
 import { AuthChallengeStack } from "../lib/auth-challenge-stack";
 
 const app = new cdk.App();
@@ -32,6 +33,13 @@ const authSigV4Stack = new AuthSigV4Stack(app, `AuthSigV4Stack-${stage}`, {
 });
 
 const authUiStack = new AuthUiStack(app, `AuthUiStack-${stage}`, {
+  env: {
+    account: context["env"]["account"],
+    region: context["env"]["region"],
+  },
+});
+
+const appAdminStack = new AppAdminStack(app, `AppAdminStack-${stage}`, {
   env: {
     account: context["env"]["account"],
     region: context["env"]["region"],
