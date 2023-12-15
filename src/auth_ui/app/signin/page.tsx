@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -52,6 +51,7 @@ export default function SigninForm() {
     await signIn({ username, password }).then(async (challenge) => {
       console.log(challenge);
       window.location.href = "/";
+
       // if (challenge.challengeName === "CUSTOM_CHALLENGE") {
       //   await Auth.sendCustomChallengeAnswer(challenge, "kawa").then((user) => {
       //     console.log(user);

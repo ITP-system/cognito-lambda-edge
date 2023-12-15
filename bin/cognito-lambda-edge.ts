@@ -2,6 +2,7 @@
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { AuthCheckStack } from "../lib/auth-check-stack";
+import { AuthSigV4Stack } from "../lib/auth-sigv4-stack";
 import { AuthUiStack } from "../lib/auth-ui-stack";
 import { AuthChallengeStack } from "../lib/auth-challenge-stack";
 
@@ -17,6 +18,13 @@ const context = app.node.tryGetContext(stage);
 if (context == undefined) throw new Error("Invalid stage.");
 
 const authCheckStack = new AuthCheckStack(app, `AuthCheckStack-${stage}`, {
+  env: {
+    account: context["env"]["account"],
+    region: "us-east-1",
+  },
+});
+
+const authSigV4Stack = new AuthSigV4Stack(app, `AuthSigV4Stack-${stage}`, {
   env: {
     account: context["env"]["account"],
     region: "us-east-1",
