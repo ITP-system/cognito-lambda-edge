@@ -64,9 +64,8 @@ export class AuthSigV4Stack extends Stack {
         minify: true,
         target: "es2020",
         define: {
-          __USER_POOL_ID__: JSON.stringify(context["userPoolId"]),
           __USER_POOL_APP_ID__: JSON.stringify(context["userPoolAppId"]),
-          __USER_POOL_DOMAIN__: JSON.stringify(context["userPoolDomain"]),
+          __IDENTITY_POOL_ID__: JSON.stringify(context["identityPoolId"]),
           __CLOUD_FRONT_DOMAIN__: JSON.stringify(context["cloudFrontDomain"]),
         },
       },

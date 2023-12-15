@@ -122,12 +122,9 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - iot:Connect
-              - iot:Subscribe
-              - iot:Receive
-              - iot:Get*
               - cognito-sync:*
               - cognito-identity:*
+              - lambda:InvokeFunctionUrl
             Resource:
               - "*"
   # 未認証ユーザ用ロール
@@ -161,12 +158,9 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - iot:Connect
-              - iot:Subscribe
-              - iot:Receive
-              - iot:Get*
               - cognito-sync:*
               - cognito-identity:*
+              - lambda:InvokeFunctionUrl
             Resource:
               - "*"
 

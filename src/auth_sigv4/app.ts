@@ -1,10 +1,12 @@
 import { CloudFrontRequestHandler, CloudFrontHeaders } from "aws-lambda";
-import { fromEnv } from "@aws-sdk/credential-providers";
+import { fromCognitoIdentityPool } from "@aws-sdk/credential-providers";
 import { HttpRequest } from "@aws-sdk/protocol-http";
 import { Sha256 } from "@aws-crypto/sha256-universal";
 import { SignatureV4 } from "@aws-sdk/signature-v4";
 
 import { Logger } from "@aws-lambda-powertools/logger";
+
+import { parse } from "cookie";
 
 type Cookies = { [key: string]: string };
 
@@ -13,12 +15,11 @@ const logger = new Logger({
   serviceName: "auth-sigv4",
 });
 
-// const config = {
-//   userPoolId: __USER_POOL_ID__,
-//   userPoolAppId: __USER_POOL_APP_ID__,
-//   userPoolDomain: __USER_POOL_DOMAIN__,
-//   cloudFrontDomain: __CLOUD_FRONT_DOMAIN__,
-// };
+const config = {
+  userPoolAppId: __USER_POOL_APP_ID__,
+  identityPoolId: __IDENTITY_POOL_ID__,
+  cloudFrontDomain: __CLOUD_FRONT_DOMAIN__,
+};
 
 export const handler: CloudFrontRequestHandler = async (event) => {
   logger.debug("event", { custom_key: event });
@@ -28,6 +29,9 @@ export const handler: CloudFrontRequestHandler = async (event) => {
   const host = request.headers["host"][0].value;
   const path =
     request.uri + (request.querystring ? "?" + request.querystring : "");
+
+  // クッキーを取得する
+  const cookies = extractAndParseCookies(request.headers, config.userPoolAppId);
 
   // 署名のためのリクエストを準備する
   const reqForSign = new HttpRequest({
@@ -49,7 +53,12 @@ export const handler: CloudFrontRequestHandler = async (event) => {
     region: "ap-northeast-1",
     service: "lambda",
     sha256: Sha256,
-    credentials: await fromEnv()(),
+    credentials: fromCognitoIdentityPool({
+      identityPoolId: config.identityPoolId,
+      clientConfig: {
+        region: "ap-northeast-1",
+      },
+    }),
   });
 
   const signedReq = await signer.sign(reqForSign);
@@ -68,3 +77,45 @@ export const handler: CloudFrontRequestHandler = async (event) => {
 
   return request;
 };
+
+/**
+ * クッキーを抽出してパースします
+ * @param headers
+ * @param clientId
+ * @returns
+ */
+export function extractAndParseCookies(
+  headers: CloudFrontHeaders,
+  clientId: string
+) {
+  const keyPrefix = `CognitoIdentityServiceProvider.${clientId}`;
+  const lastUserKey = `${keyPrefix}.LastAuthUser`;
+
+  if (!headers["cookie"]) {
+    return {};
+  }
+  const cookies = headers["cookie"].reduce(
+    (reduced, header) => Object.assign(reduced, parse(header.value)),
+    {} as Cookies
+  );
+
+  if (!cookies) {
+    return {};
+  }
+
+  const tokenUserName: string = cookies[lastUserKey];
+
+  const cookieNames: { [name: string]: string } = {
+    lastUserKey,
+    idTokenKey: `${keyPrefix}.${tokenUserName}.idToken`,
+    accessTokenKey: `${keyPrefix}.${tokenUserName}.accessToken`,
+    refreshTokenKey: `${keyPrefix}.${tokenUserName}.refreshToken`,
+  };
+
+  return {
+    tokenUserName: cookies[cookieNames.lastUserKey],
+    idToken: cookies[cookieNames.idTokenKey],
+    accessToken: cookies[cookieNames.accessTokenKey],
+    refreshToken: cookies[cookieNames.refreshTokenKey],
+  };
+}
