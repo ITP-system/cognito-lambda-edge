@@ -1,7 +1,3 @@
 export default function AppAdmin() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      AppAdmin Root Page
-    </main>
-  );
+  return <div>Admin</div>;
 }

@@ -38,13 +38,13 @@ const Header = () => {
             ホーム
           </Link>
           <Link
-            href="/admin"
+            href="/"
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
           >
             admin
           </Link>
           <Link
-            href="/admin/user"
+            href="/user"
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
           >
             ユーザー
