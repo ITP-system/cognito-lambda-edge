@@ -2,6 +2,11 @@ export const dynamic = "force-dynamic";
 
 import React from "react";
 
+import {
+  CognitoIdentityProviderClient,
+  ListUsersCommand,
+} from "@aws-sdk/client-cognito-identity-provider";
+
 // component
 import UserList from "./component/userlist";
 
@@ -81,15 +86,19 @@ type UserDataType = {
 };
 
 async function getData() {
-  // await fetch("", {
-  //   cache: "no-store",
-  // });
+  const cognitoClient = new CognitoIdentityProviderClient({
+    region: "ap-northeast-1",
+  });
 
-  return data;
+  const response = await cognitoClient.send(
+    new ListUsersCommand({ UserPoolId: "ap-northeast-1_kK8P0KGmO" })
+  );
+
+  return response;
 }
 
 const User = async () => {
-  const user_data: UserDataType = await getData();
+  const user_data: any = await getData();
 
   return (
     <div>

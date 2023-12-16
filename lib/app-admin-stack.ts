@@ -7,6 +7,14 @@ import {
   FunctionUrlAuthType,
   InvokeMode,
 } from "aws-cdk-lib/aws-lambda";
+import {
+  CompositePrincipal,
+  Effect,
+  ManagedPolicy,
+  PolicyStatement,
+  Role,
+  ServicePrincipal,
+} from "aws-cdk-lib/aws-iam";
 
 export class AppAdminStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -16,7 +24,34 @@ export class AppAdminStack extends Stack {
     const context = this.node.tryGetContext(stage);
     const system = context["system"];
 
-    const lambdaAuthUi = new DockerImageFunction(this, "LambdaAppAdmin", {
+    const policyLambdaAppAdmin = new ManagedPolicy(this, "PolicyLambdaedge", {
+      managedPolicyName: `${system}-${stage}-policy-lambda-appadmin`,
+      description: "Lambda edge execution policy",
+      statements: [
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: ["cognito-idp:ListUsers"],
+          resources: ["*"],
+        }),
+      ],
+    });
+
+    const roleLambdaAppAdmin = new Role(this, "RoleLambdaAppAdmin", {
+      roleName: `${system}-${stage}-role-lambda-appadmin`,
+      assumedBy: new CompositePrincipal(
+        new ServicePrincipal("lambda.amazonaws.com")
+      ),
+    });
+
+    roleLambdaAppAdmin.addManagedPolicy(
+      ManagedPolicy.fromAwsManagedPolicyName(
+        "service-role/AWSLambdaBasicExecutionRole"
+      )
+    );
+
+    roleLambdaAppAdmin.addManagedPolicy(policyLambdaAppAdmin);
+
+    const lambdaAppAdmin = new DockerImageFunction(this, "LambdaAppAdmin", {
       architecture: Architecture.X86_64,
       code: DockerImageCode.fromImageAsset("src/app_admin/", {
         buildArgs: {
@@ -29,15 +64,16 @@ export class AppAdminStack extends Stack {
       },
       functionName: `${system}-${stage}-lambda-appadmin`,
       memorySize: 1024,
+      role: roleLambdaAppAdmin,
     });
 
-    const lambdaAuthUiUrl = lambdaAuthUi.addFunctionUrl({
+    const lambdaAppAdminUrl = lambdaAppAdmin.addFunctionUrl({
       authType: FunctionUrlAuthType.NONE,
       invokeMode: InvokeMode.RESPONSE_STREAM,
     });
 
-    new CfnOutput(this, "lambdaAuthUiUrl", {
-      value: lambdaAuthUiUrl.url,
+    new CfnOutput(this, "lambdaAppAdminUrl", {
+      value: lambdaAppAdminUrl.url,
     });
   }
 }

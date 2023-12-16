@@ -122,8 +122,6 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - cognito-sync:*
-              - cognito-identity:*
               - lambda:InvokeFunctionUrl
             Resource:
               - "*"
@@ -158,8 +156,6 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - cognito-sync:*
-              - cognito-identity:*
               - lambda:InvokeFunctionUrl
             Resource:
               - "*"
