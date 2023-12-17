@@ -1,8 +1,14 @@
 FROM public.ecr.aws/lambda/nodejs:18 as builder
 WORKDIR /app
 
+ARG USER_POOL_ID
+ARG USER_POOL_APP_ID
+ARG IDENTITY_POOL_ID
 ARG CLOUD_FRONT_DOMAIN
 RUN touch .env.production
+RUN echo "USER_POOL_ID=$USER_POOL_ID" >> .env.production
+RUN echo "USER_POOL_APP_ID=$USER_POOL_APP_ID" >> .env.production
+RUN echo "IDENTITY_POOL_ID=$IDENTITY_POOL_ID" >> .env.production
 RUN echo "CLOUD_FRONT_DOMAIN=$CLOUD_FRONT_DOMAIN" >> .env.production
 RUN cat .env.production
 

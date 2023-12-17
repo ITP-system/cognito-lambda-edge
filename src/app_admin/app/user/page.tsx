@@ -12,32 +12,9 @@ import {
   ListUsersCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
+import { getIdToken } from "@/src/server-utils";
+
 //export const dynamic = "force-dynamic";
-
-const getIdToken = (): string => {
-  const clientId = "7f61ae5f59mviihl0s3m57050u";
-  const keyPrefix = `CognitoIdentityServiceProvider.${clientId}`;
-  const lastUserKey = `${keyPrefix}.LastAuthUser`;
-
-  const cookieStore = cookies();
-
-  const cookie = cookieStore
-    .getAll()
-    .map((cookie) => `${cookie.name}=${cookie.value}`)
-    .join(";");
-
-  console.log(cookie);
-
-  const tokenUserName = cookieStore.get(lastUserKey)?.value;
-
-  const idToken = cookieStore.get(
-    `${keyPrefix}.${tokenUserName}.idToken`
-  )?.value;
-
-  console.log(idToken);
-
-  return idToken as string;
-};
 
 const data: UserDataType = {
   Users: [
@@ -121,16 +98,16 @@ async function getData(idToken: any) {
       clientConfig: {
         region: "ap-northeast-1",
       },
-      identityPoolId: "ap-northeast-1:3be75277-ea37-41e6-acd4-e57f65309b3e",
+      identityPoolId: process.env.IDENTITY_POOL_ID!,
       logins: {
-        [`cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_kK8P0KGmO`]:
+        [`cognito-idp.ap-northeast-1.amazonaws.com/${process.env.USER_POOL_ID}`]:
           idToken,
       },
     }),
   });
 
   const response = await cognitoClient.send(
-    new ListUsersCommand({ UserPoolId: "ap-northeast-1_kK8P0KGmO" })
+    new ListUsersCommand({ UserPoolId: process.env.USER_POOL_ID })
   );
 
   return response;
@@ -138,7 +115,7 @@ async function getData(idToken: any) {
 }
 
 const User = async () => {
-  const idToken = getIdToken();
+  const idToken = getIdToken(cookies);
 
   const user_data: any = await getData(idToken);
 

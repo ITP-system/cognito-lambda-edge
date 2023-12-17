@@ -1,9 +1,5 @@
-"use server";
-import { cookies } from "next/headers";
-
-const getIdToken = (): string => {
-  const clientId = "oqnnvlam7laoq8okanq660sr";
-  const keyPrefix = `CognitoIdentityServiceProvider.${clientId}`;
+export const getIdToken = (cookies: any): string => {
+  const keyPrefix = `CognitoIdentityServiceProvider.${process.env.USER_POOL_APP_ID}`;
   const lastUserKey = `${keyPrefix}.LastAuthUser`;
 
   const cookieStore = cookies();
@@ -17,5 +13,3 @@ const getIdToken = (): string => {
 
   return idToken as string;
 };
-
-export const idToken = getIdToken();
