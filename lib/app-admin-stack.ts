@@ -15,6 +15,7 @@ import {
   Role,
   ServicePrincipal,
 } from "aws-cdk-lib/aws-iam";
+import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 
 export class AppAdminStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -60,6 +61,7 @@ export class AppAdminStack extends Stack {
           IDENTITY_POOL_ID: context["identityPoolId"],
           CLOUD_FRONT_DOMAIN: context["cloudFrontDomain"],
         },
+        platform: Platform.LINUX_AMD64,
       }),
       description: "...",
       environment: {

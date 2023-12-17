@@ -71,7 +71,7 @@ export default function SigninForm() {
             name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>ユーザ名</FormLabel>
                 <FormControl>
                   <Input placeholder="username" {...field} />
                 </FormControl>
@@ -84,7 +84,7 @@ export default function SigninForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>パスワード</FormLabel>
                 <FormControl>
                   <Input type="password" placeholder="password" {...field} />
                 </FormControl>

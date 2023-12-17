@@ -1,7 +1,7 @@
 import { Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import { Runtime } from "aws-cdk-lib/aws-lambda";
+import { Architecture, Runtime } from "aws-cdk-lib/aws-lambda";
 
 export class AuthChallengeStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -15,6 +15,7 @@ export class AuthChallengeStack extends Stack {
       this,
       "LambdaAuthChallengeDefine",
       {
+        architecture: Architecture.ARM_64,
         awsSdkConnectionReuse: false,
         entry: "src/auth_challenge/define/app.js",
         handler: "handler",
@@ -27,6 +28,7 @@ export class AuthChallengeStack extends Stack {
       this,
       "LambdaAuthChallengeCreate",
       {
+        architecture: Architecture.ARM_64,
         awsSdkConnectionReuse: false,
         entry: "src/auth_challenge/create/app.js",
         handler: "handler",
@@ -39,6 +41,7 @@ export class AuthChallengeStack extends Stack {
       this,
       "LambdaAuthChallengeVerify",
       {
+        architecture: Architecture.ARM_64,
         awsSdkConnectionReuse: false,
         entry: "src/auth_challenge/verify/app.js",
         handler: "handler",

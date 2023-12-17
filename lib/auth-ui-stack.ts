@@ -7,6 +7,7 @@ import {
   FunctionUrlAuthType,
   InvokeMode,
 } from "aws-cdk-lib/aws-lambda";
+import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 
 export class AuthUiStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -22,6 +23,7 @@ export class AuthUiStack extends Stack {
         buildArgs: {
           CLOUD_FRONT_DOMAIN: context["cloudFrontDomain"],
         },
+        platform: Platform.LINUX_AMD64,
       }),
       description: "...",
       environment: {
