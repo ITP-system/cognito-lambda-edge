@@ -53,7 +53,7 @@ export class AppAdminStack extends Stack {
     roleLambdaAppAdmin.addManagedPolicy(policyLambdaAppAdmin);
 
     const lambdaAppAdmin = new DockerImageFunction(this, "LambdaAppAdmin", {
-      architecture: Architecture.X86_64,
+      architecture: Architecture.ARM_64,
       code: DockerImageCode.fromImageAsset("src/app_admin/", {
         buildArgs: {
           USER_POOL_ID: context["userPoolId"],
@@ -61,7 +61,7 @@ export class AppAdminStack extends Stack {
           IDENTITY_POOL_ID: context["identityPoolId"],
           CLOUD_FRONT_DOMAIN: context["cloudFrontDomain"],
         },
-        platform: Platform.LINUX_AMD64,
+        platform: Platform.LINUX_ARM64,
       }),
       description: "...",
       environment: {

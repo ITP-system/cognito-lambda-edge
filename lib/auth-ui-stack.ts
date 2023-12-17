@@ -18,12 +18,12 @@ export class AuthUiStack extends Stack {
     const system = context["system"];
 
     const lambdaAuthUi = new DockerImageFunction(this, "LambdaAuthUi", {
-      architecture: Architecture.X86_64,
+      architecture: Architecture.ARM_64,
       code: DockerImageCode.fromImageAsset("src/auth_ui/", {
         buildArgs: {
           CLOUD_FRONT_DOMAIN: context["cloudFrontDomain"],
         },
-        platform: Platform.LINUX_AMD64,
+        platform: Platform.LINUX_ARM64,
       }),
       description: "...",
       environment: {
