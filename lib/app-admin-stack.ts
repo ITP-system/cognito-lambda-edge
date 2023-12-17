@@ -55,6 +55,9 @@ export class AppAdminStack extends Stack {
       architecture: Architecture.X86_64,
       code: DockerImageCode.fromImageAsset("src/app_admin/", {
         buildArgs: {
+          USER_POOL_ID: context["userPoolId"],
+          USER_POOL_APP_ID: context["userPoolAppId"],
+          IDENTITY_POOL_ID: context["identityPoolId"],
           CLOUD_FRONT_DOMAIN: context["cloudFrontDomain"],
         },
       }),

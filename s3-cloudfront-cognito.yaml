@@ -157,6 +157,7 @@ Resources:
           - Effect: Allow
             Action:
               - lambda:InvokeFunctionUrl
+              - cognito-idp:ListUsers
             Resource:
               - "*"
 
