@@ -1,14 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   basePath: "/auth",
-  webpack: (config, { webpack, isServer, nextRuntime }) => {
-    // Avoid AWS SDK Node.js require issue
-    if (isServer && nextRuntime === "nodejs")
-      config.plugins.push(
-        new webpack.IgnorePlugin({ resourceRegExp: /^aws-crt$/ })
-      );
-    return config;
-  },
+  output: "standalone",
 };
 
 module.exports = nextConfig;

@@ -28,7 +28,7 @@ export class AuthUiStack extends Stack {
         AWS_LWA_INVOKE_MODE: "response_stream",
       },
       functionName: `${system}-${stage}-lambda-authui`,
-      memorySize: 1024,
+      memorySize: 2048,
     });
 
     const lambdaAuthUiUrl = lambdaAuthUi.addFunctionUrl({

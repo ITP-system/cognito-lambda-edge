@@ -66,7 +66,7 @@ export class AppAdminStack extends Stack {
         AWS_LWA_INVOKE_MODE: "response_stream",
       },
       functionName: `${system}-${stage}-lambda-appadmin`,
-      memorySize: 1024,
+      memorySize: 2048,
       role: roleLambdaAppAdmin,
     });
 

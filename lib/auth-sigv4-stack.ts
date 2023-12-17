@@ -59,6 +59,7 @@ export class AuthSigV4Stack extends Stack {
       entry: "src/auth_sigv4/app.ts",
       handler: "handler",
       functionName: `${system}-${stage}-lambda-authsigv4`,
+      memorySize: 1024,
       runtime: Runtime.NODEJS_18_X,
       bundling: {
         minify: true,
