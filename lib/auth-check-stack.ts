@@ -10,6 +10,7 @@ import {
   Role,
   ServicePrincipal,
 } from "aws-cdk-lib/aws-iam";
+import { RetentionDays } from "aws-cdk-lib/aws-logs";
 
 export class AuthCheckStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -56,8 +57,9 @@ export class AuthCheckStack extends Stack {
     const lambdaAuthCheck = new NodejsFunction(this, "LambdaAuthCheck", {
       awsSdkConnectionReuse: false,
       entry: "src/auth_check/app.ts",
-      handler: "handler",
       functionName: `${system}-${stage}-lambda-authcheck`,
+      handler: "handler",
+      logRetention: RetentionDays.ONE_MONTH,
       runtime: Runtime.NODEJS_18_X,
       bundling: {
         minify: true,

@@ -8,6 +8,7 @@ import {
   InvokeMode,
 } from "aws-cdk-lib/aws-lambda";
 import { Platform } from "aws-cdk-lib/aws-ecr-assets";
+import { RetentionDays } from "aws-cdk-lib/aws-logs";
 
 export class AuthUiStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -30,6 +31,7 @@ export class AuthUiStack extends Stack {
         AWS_LWA_INVOKE_MODE: "response_stream",
       },
       functionName: `${system}-${stage}-lambda-authui`,
+      logRetention: RetentionDays.ONE_MONTH,
       memorySize: 2048,
     });
 

@@ -1,6 +1,6 @@
 {
   "auth": {
-    "authuif68686b1": {
+    "authui913bf7d4": {
       "customAuth": false,
       "dependsOn": [],
       "providerPlugin": "awscloudformation",
@@ -9,91 +9,91 @@
     }
   },
   "parameters": {
-    "AMPLIFY_auth_authuif68686b1_allowUnauthenticatedIdentities": {
+    "AMPLIFY_auth_authui913bf7d4_allowUnauthenticatedIdentities": {
       "usedBy": [
         {
           "category": "auth",
-          "resourceName": "authuif68686b1"
+          "resourceName": "authui913bf7d4"
         }
       ]
     },
-    "AMPLIFY_auth_authuif68686b1_authRoleArn": {
+    "AMPLIFY_auth_authui913bf7d4_authRoleArn": {
       "usedBy": [
         {
           "category": "auth",
-          "resourceName": "authuif68686b1"
+          "resourceName": "authui913bf7d4"
         }
       ]
     },
-    "AMPLIFY_auth_authuif68686b1_authRoleName": {
+    "AMPLIFY_auth_authui913bf7d4_authRoleName": {
       "usedBy": [
         {
           "category": "auth",
-          "resourceName": "authuif68686b1"
+          "resourceName": "authui913bf7d4"
         }
       ]
     },
-    "AMPLIFY_auth_authuif68686b1_identityPoolId": {
+    "AMPLIFY_auth_authui913bf7d4_identityPoolId": {
       "usedBy": [
         {
           "category": "auth",
-          "resourceName": "authuif68686b1"
+          "resourceName": "authui913bf7d4"
         }
       ]
     },
-    "AMPLIFY_auth_authuif68686b1_identityPoolName": {
+    "AMPLIFY_auth_authui913bf7d4_identityPoolName": {
       "usedBy": [
         {
           "category": "auth",
-          "resourceName": "authuif68686b1"
+          "resourceName": "authui913bf7d4"
         }
       ]
     },
-    "AMPLIFY_auth_authuif68686b1_nativeClientId": {
+    "AMPLIFY_auth_authui913bf7d4_nativeClientId": {
       "usedBy": [
         {
           "category": "auth",
-          "resourceName": "authuif68686b1"
+          "resourceName": "authui913bf7d4"
         }
       ]
     },
-    "AMPLIFY_auth_authuif68686b1_unauthRoleArn": {
+    "AMPLIFY_auth_authui913bf7d4_unauthRoleArn": {
       "usedBy": [
         {
           "category": "auth",
-          "resourceName": "authuif68686b1"
+          "resourceName": "authui913bf7d4"
         }
       ]
     },
-    "AMPLIFY_auth_authuif68686b1_unauthRoleName": {
+    "AMPLIFY_auth_authui913bf7d4_unauthRoleName": {
       "usedBy": [
         {
           "category": "auth",
-          "resourceName": "authuif68686b1"
+          "resourceName": "authui913bf7d4"
         }
       ]
     },
-    "AMPLIFY_auth_authuif68686b1_userPoolId": {
+    "AMPLIFY_auth_authui913bf7d4_userPoolId": {
       "usedBy": [
         {
           "category": "auth",
-          "resourceName": "authuif68686b1"
+          "resourceName": "authui913bf7d4"
         }
       ]
     },
-    "AMPLIFY_auth_authuif68686b1_userPoolName": {
+    "AMPLIFY_auth_authui913bf7d4_userPoolName": {
       "usedBy": [
         {
           "category": "auth",
-          "resourceName": "authuif68686b1"
+          "resourceName": "authui913bf7d4"
         }
       ]
     },
-    "AMPLIFY_auth_authuif68686b1_webClientId": {
+    "AMPLIFY_auth_authui913bf7d4_webClientId": {
       "usedBy": [
         {
           "category": "auth",
-          "resourceName": "authuif68686b1"
+          "resourceName": "authui913bf7d4"
         }
       ]
     }

@@ -10,6 +10,7 @@ import {
   Role,
   ServicePrincipal,
 } from "aws-cdk-lib/aws-iam";
+import { RetentionDays } from "aws-cdk-lib/aws-logs";
 
 export class AuthSigV4Stack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -57,8 +58,9 @@ export class AuthSigV4Stack extends Stack {
     const lambdaAuthSigV4 = new NodejsFunction(this, "LambdaAuthSigV4", {
       awsSdkConnectionReuse: false,
       entry: "src/auth_sigv4/app.ts",
-      handler: "handler",
       functionName: `${system}-${stage}-lambda-authsigv4`,
+      handler: "handler",
+      logRetention: RetentionDays.ONE_MONTH,
       memorySize: 1024,
       runtime: Runtime.NODEJS_18_X,
       bundling: {

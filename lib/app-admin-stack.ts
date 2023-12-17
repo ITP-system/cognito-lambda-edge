@@ -7,6 +7,7 @@ import {
   FunctionUrlAuthType,
   InvokeMode,
 } from "aws-cdk-lib/aws-lambda";
+import { RetentionDays } from "aws-cdk-lib/aws-logs";
 import {
   CompositePrincipal,
   Effect,
@@ -68,6 +69,7 @@ export class AppAdminStack extends Stack {
         AWS_LWA_INVOKE_MODE: "response_stream",
       },
       functionName: `${system}-${stage}-lambda-appadmin`,
+      logRetention: RetentionDays.ONE_MONTH,
       memorySize: 2048,
       role: roleLambdaAppAdmin,
     });

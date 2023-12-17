@@ -2,6 +2,7 @@ import { Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Architecture, Runtime } from "aws-cdk-lib/aws-lambda";
+import { RetentionDays } from "aws-cdk-lib/aws-logs";
 
 export class AuthChallengeStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -18,8 +19,9 @@ export class AuthChallengeStack extends Stack {
         architecture: Architecture.ARM_64,
         awsSdkConnectionReuse: false,
         entry: "src/auth_challenge/define/app.js",
-        handler: "handler",
         functionName: `${system}-${stage}-lambda-authchallenge-define`,
+        handler: "handler",
+        logRetention: RetentionDays.ONE_MONTH,
         runtime: Runtime.NODEJS_18_X,
       }
     );
@@ -31,8 +33,9 @@ export class AuthChallengeStack extends Stack {
         architecture: Architecture.ARM_64,
         awsSdkConnectionReuse: false,
         entry: "src/auth_challenge/create/app.js",
-        handler: "handler",
         functionName: `${system}-${stage}-lambda-authchallenge-create`,
+        handler: "handler",
+        logRetention: RetentionDays.ONE_MONTH,
         runtime: Runtime.NODEJS_18_X,
       }
     );
@@ -44,8 +47,9 @@ export class AuthChallengeStack extends Stack {
         architecture: Architecture.ARM_64,
         awsSdkConnectionReuse: false,
         entry: "src/auth_challenge/verify/app.js",
-        handler: "handler",
         functionName: `${system}-${stage}-lambda-authchallenge-verify`,
+        handler: "handler",
+        logRetention: RetentionDays.ONE_MONTH,
         runtime: Runtime.NODEJS_18_X,
       }
     );
