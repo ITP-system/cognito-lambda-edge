@@ -48,59 +48,71 @@ export default function CreateUserForm() {
 
   return (
     <div className="mt-[calc(var(--header-height)+2.25rem)] flex flex-col items-center">
-      <h2 className="bold text-xl">アカウントを作成</h2>
-      <div className="py-8">
-        <p className="text-xs">
-          <b className="text-red-500 text-sm">*</b>
-          マークのある項目は入力必須項目です。
-        </p>
+      <div className="border w-fit px-6 pt-6 pb-12 rounded-md border-gray-500 flex flex-col items-center">
+        <h2 className="bold text-xl">アカウントを作成</h2>
+        <div className="py-8">
+          <p className="text-xs">
+            <b className="text-red-500 text-sm">*</b>
+            マークのある項目は入力必須項目です。
+          </p>
+        </div>
+        <Form {...form}>
+          <form
+            action={async (FormData: FormData) => {
+              await formActions(FormData);
+            }}
+          >
+            <FormField
+              control={form.control}
+              name="userName"
+              render={({ field }) => (
+                <FormItem className="my-3 max-w-xs w-[100dvw]">
+                  <FormLabel>
+                    ユーザー名<b className="text-red-500">*</b>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      className="border-gray-500"
+                      placeholder="例 : 苗字 名前"
+                      required
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="userEmail"
+              render={({ field }) => (
+                <FormItem className="my-3 max-w-xs w-[100dvw]">
+                  <FormLabel>
+                    メールアドレス<b className="text-red-500">*</b>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      className="border-gray-500"
+                      placeholder="例 : xxx@xxx.email"
+                      required
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="mt-8">
+              <Button type="submit" className="w-full">
+                作成
+              </Button>
+            </div>
+          </form>
+        </Form>
       </div>
-      <Form {...form}>
-        <form
-          action={async (FormData: FormData) => {
-            await formActions(FormData);
-          }}
-        >
-          <FormField
-            control={form.control}
-            name="userName"
-            render={({ field }) => (
-              <FormItem className="my-3 max-w-xs w-[100dvw]">
-                <FormLabel>
-                  ユーザー名<b className="text-red-500">*</b>
-                </FormLabel>
-                <FormControl>
-                  <Input placeholder="例 : 苗字 名前" required {...field} />
-                </FormControl>
-
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="userEmail"
-            render={({ field }) => (
-              <FormItem className="my-3 max-w-xs w-[100dvw]">
-                <FormLabel>
-                  メールアドレス<b className="text-red-500">*</b>
-                </FormLabel>
-                <FormControl>
-                  <Input placeholder="例 : xxx@xxx.email" required {...field} />
-                </FormControl>
-
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="mt-8">
-            <Button type="submit" className="w-full">
-              作成
-            </Button>
-          </div>
-        </form>
-      </Form>
     </div>
   );
 }
