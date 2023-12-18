@@ -43,7 +43,8 @@ export default function CreateUserForm() {
     <div className="mt-[calc(var(--header-height)+2.25rem)] flex flex-col items-center">
       <div>
         <span>
-          <b className="text-red-500">*</b>マークのある項目は入力必須項目です。
+          <b className="text-red-500">*</b>
+          マークのある項目は入力必須項目です。
         </span>
         <Form {...form}>
           <form
@@ -58,10 +59,10 @@ export default function CreateUserForm() {
               render={({ field }) => (
                 <FormItem className="max-w-xs w-[100dvw]">
                   <FormLabel>
-                    userName<b className="text-red-500">*</b>
+                    ユーザー名<b className="text-red-500">*</b>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="username" required {...field} />
+                    <Input placeholder="例 : 苗字 名前" required {...field} />
                   </FormControl>
 
                   <FormMessage />
@@ -74,10 +75,14 @@ export default function CreateUserForm() {
               render={({ field }) => (
                 <FormItem className="max-w-xs w-[100dvw]">
                   <FormLabel>
-                    userEmail<b className="text-red-500">*</b>
+                    メールアドレス<b className="text-red-500">*</b>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="xxx@xxx.email" required {...field} />
+                    <Input
+                      placeholder="例 : xxx@xxx.email"
+                      required
+                      {...field}
+                    />
                   </FormControl>
 
                   <FormMessage />
@@ -89,17 +94,16 @@ export default function CreateUserForm() {
               name="userCreateDate"
               render={({ field }) => (
                 <FormItem className="max-w-xs w-[100dvw]">
-                  <FormLabel>userCreateDate</FormLabel>
+                  <FormLabel>作成日</FormLabel>
                   <FormControl>
-                    <Input placeholder="last modify" {...field} />
+                    <Input placeholder="例 : 2023-12-31" {...field} />
                   </FormControl>
-                  <FormDescription>last modify </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <Button type="submit" className="float-right">
-              Submit
+              保存
             </Button>
           </form>
         </Form>
