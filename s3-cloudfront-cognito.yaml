@@ -158,6 +158,16 @@ Resources:
             Action:
               - lambda:InvokeFunctionUrl
               - cognito-idp:ListUsers
+              - cognito-idp:ListGroups
+              - cognito-idp:AdminGetUser
+              - cognito-idp:AdminCreateUser
+              - cognito-idp:AdminUpdateUserAttributes
+              - cognito-idp:AdminDeleteUser
+              - cognito-idp:AdminEnableUser
+              - cognito-idp:AdminDisableUser
+              - cognito-idp:AdminListGroupsForUser
+              - cognito-idp:AdminAddUserToGroup
+              - cognito-idp:AdminRemoveUserFromGroup
             Resource:
               - "*"
 
