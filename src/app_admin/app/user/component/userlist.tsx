@@ -60,30 +60,8 @@ type UsersType = {
 
 export const columns: ColumnDef<UsersType>[] = [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
     accessorKey: "Username",
-    header: "ユーザー",
+    header: "ユーザー名",
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("Username")}</div>
     ),
@@ -97,7 +75,7 @@ export const columns: ColumnDef<UsersType>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="p-0"
         >
-          Email
+          メールアドレス
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -132,6 +110,12 @@ export const columns: ColumnDef<UsersType>[] = [
     cell: ({ row }) => {
       const UsersType = row.original;
 
+      const deleteUser = async (delete_user: any) => {
+        console.log(delete_user);
+
+        return;
+      };
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -141,15 +125,11 @@ export const columns: ColumnDef<UsersType>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(UsersType.Username)}
-            >
-              Copy UsersType ID
-            </DropdownMenuItem>
+            <DropdownMenuItem>ユーザーの情報を変更</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View UsersType details</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => deleteUser(row.original)}>
+              ユーザーを削除
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -183,42 +163,19 @@ export default function DataTableDemo({ userData }: { userData: UsersType[] }) {
     },
   });
 
-  const deleteUser = async () => {
-    let deleteuser: any = [];
-    for (const property in rowSelection) {
-      deleteuser.push(tableData[Number(property)]);
-    }
-
-    await userDereteAction(deleteuser);
-  };
-
   return (
     <div className="w-full">
       {/* userアクション */}
-      <div className="flex items-center py-4">
+      <div className="flex items-center py-4 justify-between">
         <div></div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              アクション <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem className="p-0">
-              <Link href={"user/create"} className="py-2 px-1">
-                ユーザー追加
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="p-0">
-              <button
-                className="ml-auto py-2 px-1"
-                onClick={() => deleteUser()}
-              >
-                選択ユーザーの削除
-              </button>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div>
+          <Link
+            href={"user/create"}
+            className="ml-auto inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+          >
+            ユーザー作成
+          </Link>
+        </div>
       </div>
 
       {/* 一覧表示 */}
