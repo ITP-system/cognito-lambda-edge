@@ -108,7 +108,7 @@ export const columns: ColumnDef<UsersType>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const UsersType = row.original;
+      const Username = row.original.Username;
 
       const deleteUser = async (delete_user: any) => {
         console.log(delete_user);
@@ -125,7 +125,9 @@ export const columns: ColumnDef<UsersType>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>ユーザーの情報を変更</DropdownMenuItem>
+            <DropdownMenuItem>
+              <Link href={`user/${Username}`}>ユーザーの情報を変更</Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => deleteUser(row.original)}>
               ユーザーを削除
