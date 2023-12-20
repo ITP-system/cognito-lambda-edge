@@ -1,30 +1,44 @@
 "use server";
 import "server-only";
 
+// next.js
 import { redirect } from "next/navigation";
 import { revalidateTag } from "next/cache";
 import { revalidatePath } from "next/cache";
+
+// aws-sdk
+import { getIdToken } from "@/src/server-utils";
+import { cookies } from "next/headers";
+import { fromCognitoIdentityPool } from "@aws-sdk/credential-providers";
 import {
-  CognitoIdentityProvider,
-  CognitoIdentityProviderClientConfig,
+  CognitoIdentityProviderClient,
+  AdminUpdateUserAttributesCommand,
+  AdminCreateUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
-const config: CognitoIdentityProviderClientConfig = {
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
-  },
-};
+const idToken = getIdToken(cookies);
 
-const provider = new CognitoIdentityProvider(config);
+const cognitoClient = new CognitoIdentityProviderClient({
+  region: "ap-northeast-1",
+  credentials: fromCognitoIdentityPool({
+    clientConfig: {
+      region: "ap-northeast-1",
+    },
+    identityPoolId: process.env.IDENTITY_POOL_ID!,
+    logins: {
+      [`cognito-idp.ap-northeast-1.amazonaws.com/${process.env.USER_POOL_ID}`]:
+        idToken,
+    },
+  }),
+});
 
 // ユーザー作成
 export const userCreateFormAction = async (FormData: FormData) => {
   const expendUserName = FormData.get("userName");
   const expendUserEmail = FormData.get("userEmail");
 
-  const result = await provider.adminCreateUser({
-    UserPoolId: process.env.USER_POOL_ID || "",
+  const requestData = {
+    UserPoolId: process.env.USER_POOL_ID,
     Username: String(expendUserName),
     UserAttributes: [
       {
@@ -32,14 +46,22 @@ export const userCreateFormAction = async (FormData: FormData) => {
         Value: String(expendUserEmail),
       },
     ],
-  });
+  };
 
-  // キャッシュ無効化
-  revalidateTag("/admin/user");
-  // fetchキャッシュの再検証
-  revalidatePath("/admin/user");
+  try {
+    await cognitoClient.send(new AdminCreateUserCommand(requestData));
 
-  return result;
+    // キャッシュ無効化
+    revalidateTag("/admin/user");
+    // fetchキャッシュの再検証
+    revalidatePath("/admin/user");
+
+    return true;
+  } catch (error) {
+    console.error(error);
+
+    return false;
+  }
 };
 
 // ユーザー更新
@@ -53,13 +75,23 @@ export const userEditFormAction = async (user_name: string, email: string) => {
         Value: email,
       },
     ],
+    MessageAction: "RESEND",
   };
 
-  const result = await provider.adminUpdateUserAttributes(requestData);
+  try {
+    await cognitoClient.send(new AdminUpdateUserAttributesCommand(requestData));
 
-  console.log("result");
-  console.log(result);
-  // return result;
+    // キャッシュ無効化
+    revalidateTag("/admin/user");
+    // fetchキャッシュの再検証
+    revalidatePath("/admin/user");
+
+    return true;
+  } catch (error) {
+    console.error(error);
+
+    return false;
+  }
 };
 
 // ユーザー削除
