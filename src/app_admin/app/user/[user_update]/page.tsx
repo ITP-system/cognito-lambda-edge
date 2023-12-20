@@ -54,7 +54,7 @@ const Edit = async ({ params }: { params: { user_update: string } }) => {
 
   return (
     <div>
-      <UserEdit username={data.Username} email={email.Value} data={data} />
+      <UserEdit username={data.Username} email={email.Value} />
     </div>
   );
 };

@@ -40,10 +40,12 @@ export default function CreateUserForm() {
     },
   });
 
-  const formActions = (FormData: FormData) => {
-    userCreateFormAction(FormData);
+  const formActions = async (FormData: FormData) => {
+    const res = await userCreateFormAction(FormData);
 
-    redirect("/user");
+    if (res) {
+      redirect("/user");
+    }
   };
 
   return (

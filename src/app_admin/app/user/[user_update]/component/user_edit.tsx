@@ -32,7 +32,7 @@ const formSchema = z.object({
   }),
 });
 
-export default function EditUserForm({ username, email, data }: any) {
+export default function EditUserForm({ username, email }: any) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,18 +43,22 @@ export default function EditUserForm({ username, email, data }: any) {
   });
 
   const formActions = async (FormData: FormData) => {
-    const username = FormData.get("userName");
-    const email = FormData.get("userEmail");
+    const email_update = FormData.get("userEmail");
 
-    await userEditFormAction(String(username), String(email));
+    const res = await userEditFormAction(
+      String(username),
+      String(email_update)
+    );
 
-    // redirect("/user");
+    if (res) {
+      redirect("/user");
+    }
   };
 
   return (
     <div className="mt-[calc(var(--header-height)+2.25rem)] flex flex-col items-center">
       <div className="border w-fit px-6 pt-6 pb-12 rounded-md border-gray-500 flex flex-col items-center">
-        <h2 className="bold text-xl">ユーザー編集</h2>
+        <h2 className="bold text-xl">ユーザー更新</h2>
         <div className="py-8">
           <p className="text-xs">
             <b className="text-red-500 text-sm">*</b>
@@ -67,30 +71,9 @@ export default function EditUserForm({ username, email, data }: any) {
               await formActions(FormData);
             }}
           >
-            <FormField
-              control={form.control}
-              name="userName"
-              render={({ field }) => (
-                <FormItem className="my-3 max-w-xs w-[100dvw]">
-                  <FormLabel>
-                    ユーザー名<b className="text-red-500">*</b>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      className="border-gray-500"
-                      placeholder="例 : 苗字 名前"
-                      required
-                      {...field}
-                    />
-                  </FormControl>
-                  <span className="text-gray-400 text-sm">
-                    現在のユーザー名：{username ? username : null}
-                  </span>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <span className="relative">
+              ユーザー名：{username ? username : null}
+            </span>
             <FormField
               control={form.control}
               name="userEmail"
@@ -117,7 +100,7 @@ export default function EditUserForm({ username, email, data }: any) {
 
             <div className="mt-8">
               <Button type="submit" className="w-full">
-                作成
+                更新
               </Button>
             </div>
           </form>
