@@ -2,7 +2,6 @@
 import "server-only";
 
 // next.js
-import { redirect } from "next/navigation";
 import { revalidateTag } from "next/cache";
 import { revalidatePath } from "next/cache";
 
@@ -12,8 +11,10 @@ import { cookies } from "next/headers";
 import { fromCognitoIdentityPool } from "@aws-sdk/credential-providers";
 import {
   CognitoIdentityProviderClient,
+  ListUsersCommand,
   AdminUpdateUserAttributesCommand,
   AdminCreateUserCommand,
+  AdminDeleteUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
 const idToken = getIdToken(cookies);
@@ -31,6 +32,26 @@ const cognitoClient = new CognitoIdentityProviderClient({
     },
   }),
 });
+
+// ユーザー一覧取得
+export const getUserListAction = async () => {
+  try {
+    const response = await cognitoClient.send(
+      new ListUsersCommand({ UserPoolId: process.env.USER_POOL_ID })
+    );
+
+    // キャッシュ無効化
+    revalidateTag("/admin/user");
+    // fetchキャッシュの再検証
+    revalidatePath("/admin/user");
+
+    return response;
+  } catch (error) {
+    console.error(error);
+
+    return false;
+  }
+};
 
 // ユーザー作成
 export const userCreateFormAction = async (FormData: FormData) => {
@@ -95,13 +116,24 @@ export const userEditFormAction = async (user_name: string, email: string) => {
 };
 
 // ユーザー削除
-export const userDereteAction = async (FormData: FormData) => {
-  console.log(FormData);
+export const userDeleteAction = async (delete_user: string) => {
+  const requestData = {
+    UserPoolId: process.env.USER_POOL_ID,
+    Username: delete_user,
+  };
 
-  // キャッシュ無効化
-  revalidateTag("/admin/user");
-  // fetchキャッシュの再検証
-  revalidatePath("/admin/user");
-  // リダイレクト
-  redirect("/admin/user");
+  try {
+    await cognitoClient.send(new AdminDeleteUserCommand(requestData));
+
+    // キャッシュ無効化
+    revalidateTag("/admin/user");
+    // fetchキャッシュの再検証
+    revalidatePath("/admin/user");
+
+    return true;
+  } catch (error) {
+    console.error(error);
+
+    return false;
+  }
 };
