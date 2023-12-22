@@ -1,12 +1,16 @@
-import { CloudFrontRequestHandler, CloudFrontHeaders } from "aws-lambda";
+import {
+  CloudFrontRequestEvent,
+  CloudFrontRequestHandler,
+  CloudFrontHeaders,
+} from "aws-lambda";
 import { fromCognitoIdentityPool } from "@aws-sdk/credential-providers";
 import { HttpRequest } from "@aws-sdk/protocol-http";
 import { Sha256 } from "@aws-crypto/sha256-universal";
 import { SignatureV4 } from "@aws-sdk/signature-v4";
-
 import { Logger } from "@aws-lambda-powertools/logger";
 
 import { parse } from "cookie";
+import { Buffer } from "buffer";
 
 type Cookies = { [key: string]: string };
 
@@ -22,28 +26,41 @@ const config = {
   cloudFrontDomain: __CLOUD_FRONT_DOMAIN__,
 };
 
-export const handler: CloudFrontRequestHandler = async (event) => {
+export const handler: CloudFrontRequestHandler = async (
+  event: CloudFrontRequestEvent
+) => {
   logger.debug("event", { custom_key: event });
 
   const request = event.Records[0].cf.request;
 
   const host = request.headers["host"][0].value;
-  const path =
-    request.uri + (request.querystring ? "?" + request.querystring : "");
 
   // クッキーを取得する
   const cookies = extractAndParseCookies(request.headers, config.userPoolAppId);
 
+  const body =
+    request.body && request.body.data
+      ? Buffer.from(request.body.data, request.body.encoding).toString()
+      : undefined;
+
+  const query = Object.fromEntries(
+    new URLSearchParams(request.querystring).entries()
+  );
+
+  logger.debug("query", { custom_key: query });
+  logger.debug("body", { custom_key: body });
+
   // 署名のためのリクエストを準備する
   const reqForSign = new HttpRequest({
-    body: request.body,
+    body: body,
     headers: {
       host: host,
     },
     hostname: host,
     method: request.method,
-    path: path,
+    path: request.uri,
     protocol: "https:",
+    query: query,
   });
 
   logger.debug("request for sign", { custom_key: reqForSign });
