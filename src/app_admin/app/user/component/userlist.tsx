@@ -1,6 +1,6 @@
 "use client";
 // React or Next
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -58,6 +58,8 @@ type UsersType = {
 
 export const columns = () => {
   const router = useRouter();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const deleteUserRef = useRef<String>();
 
   const col: ColumnDef<UsersType>[] = [
     {
@@ -112,35 +114,83 @@ export const columns = () => {
         const Username = row.original.Username;
 
         const deleteUser = async (delete_user: string) => {
-          const res = await userDeleteAction(String(delete_user));
+          deleteUserRef.current = delete_user;
+          if (dialogRef.current) {
+            dialogRef.current.showModal();
+          }
+        };
 
-          if (res) {
-            router.refresh();
+        const dialogSelect = async (selected: string) => {
+          if (selected == "cancel" && dialogRef.current) {
+            dialogRef.current.close();
+            return;
+          } else if (selected == "ok" && dialogRef.current) {
+            const res = await userDeleteAction(String(deleteUserRef.current));
+            if (res) {
+              router.refresh();
+
+              dialogRef.current.close();
+            }
+          }
+        };
+
+        const dialogClose = () => {
+          if (dialogRef.current) {
+            dialogRef.current.close();
           }
         };
 
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <>
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
                   <span className="sr-only">Open menu</span>
                   <MoreHorizontal className="h-4 w-4" />
-                </>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Link href={`user/${Username}`}>ユーザーの情報を変更</Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => deleteUser(row.original.Username)}
-              >
-                ユーザーを削除
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>
+                  <Link href={`user/${Username}`}>ユーザーの情報を変更</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem onSelect={(event) => event.preventDefault}>
+                  <button
+                    onClick={(event) => {
+                      event.preventDefault;
+                      deleteUser(Username);
+                    }}
+                  >
+                    ユーザーを削除
+                  </button>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <dialog
+              ref={dialogRef}
+              onClick={dialogClose}
+              className="border bg-white rounded shadow-lg w-[24rem] min-h-[9rem]"
+            >
+              <div onClick={(e) => e.stopPropagation()}>
+                <p className="p-5">ユーザーを削除します。</p>
+                <div className="flex w-full justify-end gap-6 p-5">
+                  <Button
+                    onClick={() => dialogSelect("cancel")}
+                    className="text-sm py-1 px-2 min-w-[5rem]"
+                  >
+                    キャンセル
+                  </Button>
+                  <Button
+                    onClick={() => dialogSelect("ok")}
+                    className="bg-red-500 hover:bg-red-500/90 text-sm py-1 px-2 min-w-[5rem]"
+                  >
+                    削除
+                  </Button>
+                </div>
+              </div>
+            </dialog>
+          </>
         );
       },
     },
