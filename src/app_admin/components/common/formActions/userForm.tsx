@@ -17,24 +17,24 @@ import {
   AdminDeleteUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
-const idToken = getIdToken(cookies);
-
-const cognitoClient = new CognitoIdentityProviderClient({
-  region: "ap-northeast-1",
-  credentials: fromCognitoIdentityPool({
-    clientConfig: {
-      region: "ap-northeast-1",
-    },
-    identityPoolId: process.env.IDENTITY_POOL_ID!,
-    logins: {
-      [`cognito-idp.ap-northeast-1.amazonaws.com/${process.env.USER_POOL_ID}`]:
-        idToken,
-    },
-  }),
-});
-
 // ユーザー一覧取得
 export const getUserListAction = async () => {
+  const idToken = getIdToken(cookies);
+
+  const cognitoClient = new CognitoIdentityProviderClient({
+    region: "ap-northeast-1",
+    credentials: fromCognitoIdentityPool({
+      clientConfig: {
+        region: "ap-northeast-1",
+      },
+      identityPoolId: process.env.IDENTITY_POOL_ID!,
+      logins: {
+        [`cognito-idp.ap-northeast-1.amazonaws.com/${process.env.USER_POOL_ID}`]:
+          idToken,
+      },
+    }),
+  });
+
   try {
     const response = await cognitoClient.send(
       new ListUsersCommand({ UserPoolId: process.env.USER_POOL_ID })
@@ -55,6 +55,22 @@ export const getUserListAction = async () => {
 
 // ユーザー作成
 export const userCreateFormAction = async (FormData: FormData) => {
+  const idToken = getIdToken(cookies);
+
+  const cognitoClient = new CognitoIdentityProviderClient({
+    region: "ap-northeast-1",
+    credentials: fromCognitoIdentityPool({
+      clientConfig: {
+        region: "ap-northeast-1",
+      },
+      identityPoolId: process.env.IDENTITY_POOL_ID!,
+      logins: {
+        [`cognito-idp.ap-northeast-1.amazonaws.com/${process.env.USER_POOL_ID}`]:
+          idToken,
+      },
+    }),
+  });
+
   const expendUserName = FormData.get("userName");
   const expendUserEmail = FormData.get("userEmail");
 
@@ -87,6 +103,22 @@ export const userCreateFormAction = async (FormData: FormData) => {
 
 // ユーザー更新
 export const userEditFormAction = async (user_name: string, email: string) => {
+  const idToken = getIdToken(cookies);
+
+  const cognitoClient = new CognitoIdentityProviderClient({
+    region: "ap-northeast-1",
+    credentials: fromCognitoIdentityPool({
+      clientConfig: {
+        region: "ap-northeast-1",
+      },
+      identityPoolId: process.env.IDENTITY_POOL_ID!,
+      logins: {
+        [`cognito-idp.ap-northeast-1.amazonaws.com/${process.env.USER_POOL_ID}`]:
+          idToken,
+      },
+    }),
+  });
+
   const requestData = {
     UserPoolId: process.env.USER_POOL_ID,
     Username: user_name,
@@ -117,6 +149,22 @@ export const userEditFormAction = async (user_name: string, email: string) => {
 
 // ユーザー削除
 export const userDeleteAction = async (delete_user: string) => {
+  const idToken = getIdToken(cookies);
+
+  const cognitoClient = new CognitoIdentityProviderClient({
+    region: "ap-northeast-1",
+    credentials: fromCognitoIdentityPool({
+      clientConfig: {
+        region: "ap-northeast-1",
+      },
+      identityPoolId: process.env.IDENTITY_POOL_ID!,
+      logins: {
+        [`cognito-idp.ap-northeast-1.amazonaws.com/${process.env.USER_POOL_ID}`]:
+          idToken,
+      },
+    }),
+  });
+
   const requestData = {
     UserPoolId: process.env.USER_POOL_ID,
     Username: delete_user,
