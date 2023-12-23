@@ -24,22 +24,18 @@ const Header = () => {
   }, [headerHeight]);
 
   return (
-    <div
-      id="wrap-header"
-      className="fixed left-0 right-0 top-0 z-10 h-12 shadow supports-[backdrop-filter]:bg-background/80 mx-auto"
-      ref={headerRef}
-    >
-      <header className="flex h-12 w-full items-center justify-between">
-        <div className={"flex items-center space-x-4 lg:space-x-6 h-12 px-6"}>
+    <div id="wrap-header" className="relative overflow-hidden" ref={headerRef}>
+      <header className="flex h-12 w-full items-center">
+        <div className="flex items-center">
           <Link
             href="/"
-            className="text-sm font-medium transition-colors hover:text-primary"
+            className="rounded-full px-4 text-sm font-medium leading-tight tracking-tighter text-muted-foreground transition-colors hover:text-primary"
           >
             ホーム
           </Link>
           <Link
             href="/user"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+            className="rounded-full px-4 text-sm font-medium leading-tight tracking-tighter text-muted-foreground transition-colors hover:text-primary"
           >
             ユーザー
           </Link>

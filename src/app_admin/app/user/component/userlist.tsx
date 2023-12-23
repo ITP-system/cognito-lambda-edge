@@ -151,9 +151,10 @@ export const columns = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem>
-                  <Link href={`user/${Username}`}>ユーザーの情報を変更</Link>
+                  <Link href={`user/${Username}`}>
+                    アカウントの情報を変更する
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
 
                 <DropdownMenuItem onSelect={(event) => event.preventDefault}>
                   <button
@@ -162,7 +163,7 @@ export const columns = () => {
                       deleteUser(Username);
                     }}
                   >
-                    ユーザーを削除
+                    アカウントを削除する
                   </button>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -170,20 +171,20 @@ export const columns = () => {
             <dialog
               ref={dialogRef}
               onClick={dialogClose}
-              className="border bg-white rounded shadow-lg w-[24rem] min-h-[9rem]"
+              className="min-h-[9rem] w-[24rem] rounded border bg-white shadow-lg"
             >
               <div onClick={(e) => e.stopPropagation()}>
                 <p className="p-5">ユーザーを削除します。</p>
                 <div className="flex w-full justify-end gap-6 p-5">
                   <Button
                     onClick={() => dialogSelect("cancel")}
-                    className="text-sm py-1 px-2 min-w-[5rem]"
+                    className="min-w-[5rem] px-2 py-1 text-sm"
                   >
                     キャンセル
                   </Button>
                   <Button
                     onClick={() => dialogSelect("ok")}
-                    className="bg-red-500 hover:bg-red-500/90 text-sm py-1 px-2 min-w-[5rem]"
+                    className="min-w-[5rem] bg-red-500 px-2 py-1 text-sm hover:bg-red-500/90"
                   >
                     削除
                   </Button>
@@ -227,14 +228,14 @@ export default function DataTableDemo({ userData }: { userData: UsersType[] }) {
   return (
     <div className="w-full">
       {/* userアクション */}
-      <div className="flex items-center py-4 justify-between">
+      <div className="flex items-center justify-between py-4">
         <div></div>
         <div>
           <Link
             href={"user/create"}
-            className="ml-auto inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+            className="ml-auto inline-flex h-10 items-center justify-center whitespace-nowrap rounded-md border border-input bg-background px-4 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
           >
-            ユーザー作成
+            アカウントの作成
           </Link>
         </div>
       </div>
@@ -252,7 +253,7 @@ export default function DataTableDemo({ userData }: { userData: UsersType[] }) {
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -271,7 +272,7 @@ export default function DataTableDemo({ userData }: { userData: UsersType[] }) {
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -297,7 +298,7 @@ export default function DataTableDemo({ userData }: { userData: UsersType[] }) {
           {table.getFilteredSelectedRowModel().rows.length} of
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
-        <div className="space-x-2 flex items-center">
+        <div className="flex items-center space-x-2">
           <Button
             variant="outline"
             size="sm"

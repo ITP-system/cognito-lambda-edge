@@ -50,11 +50,11 @@ export default function CreateUserForm() {
 
   return (
     <div className="mt-[calc(var(--header-height)+2.25rem)] flex flex-col items-center">
-      <div className="border w-fit px-6 pt-6 pb-12 rounded-md border-gray-500 flex flex-col items-center">
-        <h2 className="bold text-xl">アカウントを作成</h2>
+      <div className="flex w-fit flex-col items-center rounded-md border border-gray-500 px-6 pb-12 pt-6">
+        <h2 className="bold text-xl">アカウントの作成</h2>
         <div className="py-8">
           <p className="text-xs">
-            <b className="text-red-500 text-sm">*</b>
+            <b className="text-sm text-red-500">*</b>
             マークのある項目は入力必須項目です。
           </p>
         </div>
@@ -68,7 +68,7 @@ export default function CreateUserForm() {
               control={form.control}
               name="userName"
               render={({ field }) => (
-                <FormItem className="my-3 max-w-xs w-[100dvw]">
+                <FormItem className="my-3 w-[100dvw] max-w-xs">
                   <FormLabel>
                     ユーザー名<b className="text-red-500">*</b>
                   </FormLabel>
@@ -89,7 +89,7 @@ export default function CreateUserForm() {
               control={form.control}
               name="userEmail"
               render={({ field }) => (
-                <FormItem className="my-3 max-w-xs w-[100dvw]">
+                <FormItem className="my-3 w-[100dvw] max-w-xs">
                   <FormLabel>
                     メールアドレス<b className="text-red-500">*</b>
                   </FormLabel>

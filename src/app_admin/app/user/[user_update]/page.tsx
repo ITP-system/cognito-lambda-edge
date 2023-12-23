@@ -1,4 +1,5 @@
 import React from "react";
+import { Metadata } from "next";
 
 import UserEdit from "./component/user_edit";
 
@@ -11,6 +12,11 @@ import {
   CognitoIdentityProviderClient,
   AdminGetUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
+
+export const metadata: Metadata = {
+  title: "ユーザーの属性情報の変更",
+  description: "ユーザーの属性情報を変更することができます.",
+};
 
 async function getData(idToken: any, user_update: string) {
   const cognitoClient = new CognitoIdentityProviderClient({
@@ -31,7 +37,7 @@ async function getData(idToken: any, user_update: string) {
     new AdminGetUserCommand({
       UserPoolId: process.env.USER_POOL_ID,
       Username: user_update,
-    })
+    }),
   );
 
   return response;

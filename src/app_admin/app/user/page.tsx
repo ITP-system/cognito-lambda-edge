@@ -1,4 +1,5 @@
 import React from "react";
+import { Metadata } from "next";
 
 import { getUserListAction } from "@/components/common/formActions/userForm";
 
@@ -21,6 +22,11 @@ type UsersType = {
 
 type UserDataType = {
   Users: UsersType[];
+};
+
+export const metadata: Metadata = {
+  title: "ユーザーの管理",
+  description: "ユーザーを管理する機能を提供します.",
 };
 
 const User = async () => {

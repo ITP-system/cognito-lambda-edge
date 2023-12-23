@@ -20,8 +20,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Header />
-        <div className="container mt-[var(--header-height)]">{children}</div>
+        <div className="container mx-auto">
+          <Header />
+          <div className="min-h-[600px] overflow-hidden rounded-[0.5rem] border bg-background shadow-md md:shadow-xl">
+            <div className="hidden h-full flex-1 flex-col space-y-8 p-6 md:flex">
+              {children}
+            </div>
+          </div>
+        </div>
       </body>
     </html>
   );
