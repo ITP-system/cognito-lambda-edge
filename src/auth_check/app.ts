@@ -97,6 +97,7 @@ export const handler: CloudFrontRequestHandler = async (event) => {
             value: `https://${config.cloudFrontDomain}/auth/login`,
           },
         ],
+        "set-cookie": generateCookieClearHeaders(config.userPoolAppId),
       },
     };
 
@@ -188,6 +189,7 @@ async function refreshToken(
  * @param idToken
  * @param accessToken
  * @param refreshToken
+ * @param client_id
  * @returns
  */
 function generateCookieHeaders(
@@ -234,6 +236,44 @@ function generateCookieHeaders(
       cookieNames.refreshTokenKey
     ] = `${refreshToken}; Path=/; Secure; Expires=${expire.toUTCString()}`;
   }
+
+  // Return cookie object in format of CloudFront headers
+  return Object.entries({
+    ...cookies,
+  }).map(([k, v]) => ({ key: "set-cookie", value: `${k}=${v}` }));
+}
+
+/**
+ * Cookieヘッダーをクリアする
+ * @param idToken
+ * @param client_id
+ * @returns
+ */
+function generateCookieClearHeaders(idToken: string, client_id: string) {
+  const expire = new Date(Date.now() + 365 * 864e5);
+
+  const keyPrefix = `CognitoIdentityServiceProvider.${client_id}`;
+  const lastUserKey = `${keyPrefix}.LastAuthUser`;
+
+  const decodedIdToken = jwt_decode<{ [name: string]: string }>(idToken);
+  const tokenUserName = decodedIdToken["cognito:username"];
+
+  const cookieNames = {
+    lastUserKey,
+    idTokenKey: `${keyPrefix}.${tokenUserName}.idToken`,
+    accessTokenKey: `${keyPrefix}.${tokenUserName}.accessToken`,
+    refreshTokenKey: `${keyPrefix}.${tokenUserName}.refreshToken`,
+  };
+
+  const cookies: Cookies = {};
+
+  // Construct object with the cookies
+  Object.assign(cookies, {
+    [cookieNames.lastUserKey]: `${tokenUserName}; Path=/; Secure; Expires=${expire.toUTCString()}`,
+    [cookieNames.idTokenKey]: `Path=/; Secure; Expires=${expire.toUTCString()}`,
+    [cookieNames.accessTokenKey]: `Path=/; Secure; Expires=${expire.toUTCString()}`,
+    [cookieNames.refreshTokenKey]: `Path=/; Secure; Expires=${expire.toUTCString()}`,
+  });
 
   // Return cookie object in format of CloudFront headers
   return Object.entries({
