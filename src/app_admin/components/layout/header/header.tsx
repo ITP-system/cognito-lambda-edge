@@ -12,8 +12,8 @@ const headerList = [
 ];
 
 type HeaderTypes = {
-  className: string;
-  props: React.HTMLAttributes<HTMLDivElement>;
+  className?: string;
+  props?: React.HTMLAttributes<HTMLDivElement>;
 };
 
 export const Header = ({ className, ...props }: HeaderTypes) => {
