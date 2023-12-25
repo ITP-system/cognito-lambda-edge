@@ -1,46 +1,48 @@
 "use client";
 
-import { useState, useLayoutEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 
-const Header = () => {
-  const [headerHeight, setHeaderheight] = useState(0);
-  const headerRef = useRef<HTMLDivElement | null>(null);
+import { cn } from "@/lib/utils";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
-  useLayoutEffect(() => {
-    const root = document.documentElement;
-    const observer = new ResizeObserver((entries) => {
-      entries.forEach((el) => {
-        setHeaderheight(el.contentRect.height);
-        root.style.setProperty("--header-height", `${headerHeight}px`);
-      });
-    });
-    if (headerRef.current) {
-      observer.observe(headerRef.current);
-    }
-    return () => {
-      observer.disconnect();
-    };
-  }, [headerHeight]);
+const headerList = [
+  { name: "ホーム", href: "/" },
+  { name: "ユーザー", href: "/user" },
+];
+
+type HeaderTypes = {
+  className: string;
+  props: React.HTMLAttributes<HTMLDivElement>;
+};
+
+export const Header = ({ className, ...props }: HeaderTypes) => {
+  const pathname = usePathname();
 
   return (
-    <div id="wrap-header" className="relative overflow-hidden" ref={headerRef}>
-      <header className="flex h-12 w-full items-center">
-        <div className="flex items-center">
-          <Link
-            href="/"
-            className="rounded-full px-4 text-sm font-medium leading-tight tracking-tighter text-muted-foreground transition-colors hover:text-primary"
-          >
-            ホーム
-          </Link>
-          <Link
-            href="/user"
-            className="rounded-full px-4 text-sm font-medium leading-tight tracking-tighter text-muted-foreground transition-colors hover:text-primary"
-          >
-            ユーザー
-          </Link>
+    <div className="relative">
+      <ScrollArea className="max-w-[600px] lg:max-w-none">
+        <div className={cn("my-4 flex items-center", className)} {...props}>
+          {headerList.map((item, index) => {
+            return (
+              <Link
+                href={item.href}
+                key={item.href}
+                className={cn(
+                  "flex h-7 items-center justify-center rounded-full px-4 text-center text-sm transition-colors hover:text-primary",
+                  (pathname?.startsWith(item.href) && item.href !== "/") ||
+                    (index === 0 && pathname === "/")
+                    ? "bg-gray-300 font-medium text-primary"
+                    : "text-muted-foreground",
+                )}
+              >
+                {item.name}
+              </Link>
+            );
+          })}
         </div>
-      </header>
+        <ScrollBar orientation="horizontal" className="invisible" />
+      </ScrollArea>
     </div>
   );
 };
