@@ -19,6 +19,9 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+// server action
+import { submitContactForm } from "@/components/common/formActions/contactForm";
+
 const formSchema = z.object({
   title: z.string().min(2, {
     message: "Username must be at least 2 characters.",
@@ -51,8 +54,7 @@ export default function ProfileForm() {
   });
 
   const formActions = async (FormData: FormData) => {
-    console.log("FormData");
-    console.log(FormData);
+    submitContactForm(FormData);
   };
 
   return (
@@ -64,7 +66,7 @@ export default function ProfileForm() {
           </h2>
           <p className="text-xs">
             <b className="text-sm text-red-500">*</b>
-            マークのある項目は入力必須項目です。
+            マークのある項目は入力必須となっております。
           </p>
         </div>
 
