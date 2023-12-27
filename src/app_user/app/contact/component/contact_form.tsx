@@ -23,6 +23,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { submitContactForm } from "@/components/common/formActions/contactForm";
 
 const formSchema = z.object({
+  address: z.string().min(2, {
+    message: "Username must be at least 2 characters.",
+  }),
   title: z.string().min(2, {
     message: "Username must be at least 2 characters.",
   }),
@@ -47,6 +50,7 @@ export default function ProfileForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      address: "",
       title: "",
       text: "",
       file: "",
@@ -76,6 +80,21 @@ export default function ProfileForm() {
               await formActions(FormData);
             }}
           >
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem className="py-2">
+                  <FormLabel>mail address</FormLabel>{" "}
+                  <b className="text-sm text-red-500">*</b>
+                  <FormControl>
+                    <Input placeholder="exam@example.com" {...field} />
+                  </FormControl>
+                  <FormDescription>mail address description</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="title"
