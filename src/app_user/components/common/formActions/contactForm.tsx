@@ -1,53 +1,59 @@
 "use server";
 import "server-only";
 
-import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
+// aws-sdk
+import { getIdToken } from "@/src/server-utils";
+import { cookies } from "next/headers";
+import { fromCognitoIdentityPool } from "@aws-sdk/credential-providers";
+import { SES, SendRawEmailCommand } from "@aws-sdk/client-ses";
+
+// nodemailer
+import nodemailer from "nodemailer";
 
 // submit
 export const submitContactForm = async (FormData: FormData) => {
-  console.log(FormData);
+  const toAddress = String(FormData.get("address"));
+  const title = String(FormData.get("title"));
+  const text = String(FormData.get("text"));
+  const file = FormData.get("file") as File;
 
-  run();
-};
-
-const REGION = "ap-northeast-1";
-
-const sesClient = new SESClient({ region: REGION });
-
-const createSendEmailCommand = (toAddress: string, fromAddress: string) => {
-  return new SendEmailCommand({
-    Destination: {
-      CcAddresses: [],
-      ToAddresses: [toAddress],
-    },
-    Message: {
-      // タイトル
-      Subject: {
-        Charset: "UTF-8",
-        Data: "EMAIL_SUBJECT",
+  const input = {
+    from: String(process.env.SEND_EMAIL_ADDRESS),
+    to: toAddress,
+    subject: title,
+    text: text,
+    attachments: [
+      {
+        content: Buffer.from(await file.arrayBuffer()),
+        filename: String(file.name),
       },
-      // メール本文
-      Body: {
-        Text: {
-          Charset: "UTF-8",
-          Data: "TEXT_FORMAT_BODY",
-        },
-      },
+    ],
+  };
+
+  const idToken = getIdToken(cookies);
+
+  const credentials = fromCognitoIdentityPool({
+    clientConfig: {
+      region: "ap-northeast-1",
     },
-    Source: fromAddress,
+    identityPoolId: process.env.IDENTITY_POOL_ID!,
+    logins: {
+      [`cognito-idp.ap-northeast-1.amazonaws.com/${process.env.USER_POOL_ID}`]:
+        idToken,
+    },
   });
-};
 
-const run = async () => {
-  const sendEmailCommand = createSendEmailCommand(
-    String(process.env.SEND_EMAIL_ADDRESS),
-    String(process.env.SEND_EMAIL_ADDRESS)
-  );
+  const ses = new SES({ credentials });
+
+  const transporter = nodemailer.createTransport({
+    SES: { ses, aws: { SendRawEmailCommand } },
+  });
 
   try {
-    return await sesClient.send(sendEmailCommand);
-  } catch (e) {
-    console.error("Failed to send email.");
-    return e;
+    await transporter.sendMail(input);
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
   }
 };
