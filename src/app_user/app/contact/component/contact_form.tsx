@@ -13,9 +13,9 @@ import { submitContactForm } from "@/components/common/formActions/contactForm";
 export default function ProfileForm() {
   const formActions = async (FormData: FormData) => {
     const res = await submitContactForm(FormData);
-
     if (res) {
       console.log("送信完了");
+      document.contactform.reset();
     }
   };
 
@@ -33,6 +33,7 @@ export default function ProfileForm() {
         </div>
 
         <form
+          name="contactform"
           action={async (FormData: FormData) => {
             await formActions(FormData);
           }}
@@ -40,17 +41,17 @@ export default function ProfileForm() {
           <div className="py-3">
             <Label htmlFor="address">mail address</Label>
             <b className="text-sm text-red-500">*</b>
-            <Input name="address" placeholder="exam@example.com" />
+            <Input required name="address" placeholder="exam@example.com" />
           </div>
           <div className="py-3">
             <Label htmlFor="title">title</Label>{" "}
             <b className="text-sm text-red-500">*</b>
-            <Input name="title" placeholder="title" />
+            <Input required name="title" placeholder="title" />
           </div>
           <div className="py-3">
             <Label htmlFor="text">text</Label>{" "}
             <b className="text-sm text-red-500">*</b>
-            <Textarea name="text" placeholder="text" />
+            <Textarea required name="text" placeholder="text" />
           </div>
           <div className="grid w-full max-w-sm items-center gap-1.5 py-3">
             <Label htmlFor="file">ファイルを添付する</Label>
