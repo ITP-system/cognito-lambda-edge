@@ -14,7 +14,7 @@ CloudFront/Lambda@Edge/Cognito で 静的サイト　や SPA/SSR サイトを保
   [Custom authentication challenge Lambda triggers](https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-challenge.html)
 - カスタマイズに制約がある
 
-上記が課題となる場合にログインページを独自に開発する場合の lambda@edge について、まとめてあります。
+Hosted UI を使わずに ログインページを独自に開発する場合の lambda@edge について、まとめてあります。
 
 ## 概要
 

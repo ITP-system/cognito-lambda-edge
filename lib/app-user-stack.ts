@@ -10,7 +10,7 @@ import {
 import { RetentionDays } from "aws-cdk-lib/aws-logs";
 import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 
-export class AppAdminStack extends Stack {
+export class AppUserStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
@@ -18,7 +18,7 @@ export class AppAdminStack extends Stack {
     const context = this.node.tryGetContext(stage);
     const system = context["system"];
 
-    const lambdaAppAdmin = new DockerImageFunction(this, "LambdaAppAdmin", {
+    const lambdaAppUser = new DockerImageFunction(this, "LambdaAppUser", {
       architecture: Architecture.ARM_64,
       code: DockerImageCode.fromImageAsset("src/app_admin/", {
         buildArgs: {
@@ -33,18 +33,18 @@ export class AppAdminStack extends Stack {
       environment: {
         AWS_LWA_INVOKE_MODE: "response_stream",
       },
-      functionName: `${system}-${stage}-lambda-appadmin`,
+      functionName: `${system}-${stage}-lambda-appuser`,
       logRetention: RetentionDays.ONE_MONTH,
       memorySize: 2048,
     });
 
-    const lambdaAppAdminUrl = lambdaAppAdmin.addFunctionUrl({
+    const lambdaAppUserUrl = lambdaAppUser.addFunctionUrl({
       authType: FunctionUrlAuthType.NONE,
       invokeMode: InvokeMode.RESPONSE_STREAM,
     });
 
-    new CfnOutput(this, "lambdaAppAdminUrl", {
-      value: lambdaAppAdminUrl.url,
+    new CfnOutput(this, "lambdaAppUserUrl", {
+      value: lambdaAppUserUrl.url,
     });
   }
 }
