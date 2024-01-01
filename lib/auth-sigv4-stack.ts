@@ -1,7 +1,7 @@
-import { Stack, StackProps } from "aws-cdk-lib";
+import { CfnOutput, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import { Runtime, Version } from "aws-cdk-lib/aws-lambda";
+import { Alias, Runtime } from "aws-cdk-lib/aws-lambda";
 import {
   CompositePrincipal,
   Effect,
@@ -57,6 +57,9 @@ export class AuthSigV4Stack extends Stack {
 
     const lambdaAuthSigV4 = new NodejsFunction(this, "LambdaAuthSigV4", {
       awsSdkConnectionReuse: false,
+      currentVersionOptions: {
+        removalPolicy: RemovalPolicy.RETAIN,
+      },
       entry: "src/auth_sigv4/app.ts",
       functionName: `${system}-${stage}-lambda-authsigv4`,
       handler: "handler",
@@ -76,8 +79,14 @@ export class AuthSigV4Stack extends Stack {
       role: roleLambdaedgeSigV4,
     });
 
-    // const ambdaAuthCheckVersion = new Version(this, "LambdaAuthCheckVersion", {
-    //   lambda: lambdaAuthCheck,
-    // });
+    new Alias(this, "LambdaAuthSigV4Alias", {
+      aliasName: "current",
+      version: lambdaAuthSigV4.currentVersion,
+    });
+
+    new CfnOutput(this, "LambdaAuthSigV4CurrentVersionArn", {
+      value: lambdaAuthSigV4.currentVersion.functionArn,
+      exportName: "lambdaAuthSigV4CurrentVersionArn",
+    });
   }
 }

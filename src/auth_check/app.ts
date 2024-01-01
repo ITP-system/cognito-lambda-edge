@@ -32,7 +32,7 @@ export const handler: CloudFrontRequestHandler = async (event) => {
     );
 
     if (!cookies.idToken) {
-      throw new Error("No ID token present in cookies");
+      throw new Error("No ID token present in cookies.");
     }
 
     const verifier = CognitoJwtVerifier.create({
@@ -85,6 +85,9 @@ export const handler: CloudFrontRequestHandler = async (event) => {
       return response;
     }
   } catch (error) {
+    //TODO idトークンがクッキーにない場合 と リフレッシュトークンによる再発行でidトークンが取得できない場合に リダイレクトするが、
+    // クッキーのクリアの処理を変えるか検討する
+    //TODO requestUriをloginのquerystringに設定するようにする
     logger.error(`${error.message} with a custom key`, { custome_key: error });
 
     const response = {
@@ -107,8 +110,8 @@ export const handler: CloudFrontRequestHandler = async (event) => {
 
 /**
  * クッキーを抽出してパースします
- * @param headers
- * @param clientId
+ * @param headers CloudFront ヘッダー
+ * @param clientId Cognito クライアントID
  * @returns
  */
 export function extractAndParseCookies(
@@ -149,7 +152,8 @@ export function extractAndParseCookies(
 
 /**
  * トークンをリフレッシュします
- * @param refreshToken
+ * @param refreshToken リフレッシュトークン
+ * @param clientId Cognito クライアントID
  * @returns
  */
 async function refreshToken(
@@ -186,10 +190,9 @@ async function refreshToken(
 
 /**
  * Cookieヘッダーを生成する
- * @param idToken
- * @param accessToken
- * @param refreshToken
- * @param client_id
+ * @param idToken idトークン
+ * @param accessToken アクセストークン
+ * @param refreshToken リフレッシュトークン
  * @returns
  */
 function generateCookieHeaders(
@@ -245,8 +248,8 @@ function generateCookieHeaders(
 
 /**
  * Cookieヘッダーをクリアする
- * @param idToken
- * @param client_id
+ * @param idToken idトークン
+ * @param clientId Cognito クライアントID
  * @returns
  */
 function generateCookieClearHeaders(idToken: string, client_id: string) {

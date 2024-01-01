@@ -1,7 +1,7 @@
-import { Stack, StackProps } from "aws-cdk-lib";
+import { CfnOutput, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import { Runtime, Version } from "aws-cdk-lib/aws-lambda";
+import { Alias, Runtime } from "aws-cdk-lib/aws-lambda";
 import {
   CompositePrincipal,
   Effect,
@@ -56,6 +56,9 @@ export class AuthCheckStack extends Stack {
 
     const lambdaAuthCheck = new NodejsFunction(this, "LambdaAuthCheck", {
       awsSdkConnectionReuse: false,
+      currentVersionOptions: {
+        removalPolicy: RemovalPolicy.RETAIN,
+      },
       entry: "src/auth_check/app.ts",
       functionName: `${system}-${stage}-lambda-authcheck`,
       handler: "handler",
@@ -74,8 +77,14 @@ export class AuthCheckStack extends Stack {
       role: roleLambdaedge,
     });
 
-    // const ambdaAuthCheckVersion = new Version(this, "LambdaAuthCheckVersion", {
-    //   lambda: lambdaAuthCheck,
-    // });
+    new Alias(this, "LambdaAuthCheckAlias", {
+      aliasName: "current",
+      version: lambdaAuthCheck.currentVersion,
+    });
+
+    new CfnOutput(this, "LambdaAuthCheckCurrentVersionArn", {
+      value: lambdaAuthCheck.currentVersion.functionArn,
+      exportName: "lambdaAuthCheckCurrentVersionArn",
+    });
   }
 }
