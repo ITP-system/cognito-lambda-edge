@@ -45,6 +45,7 @@ export class AppUserStack extends Stack {
 
     new CfnOutput(this, "lambdaAppUserUrl", {
       value: lambdaAppUserUrl.url,
+      exportName: "lambdaAppUserUrl",
     });
   }
 }

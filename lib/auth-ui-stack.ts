@@ -42,6 +42,7 @@ export class AuthUiStack extends Stack {
 
     new CfnOutput(this, "lambdaAuthUiUrl", {
       value: lambdaAuthUiUrl.url,
+      exportName: "lambdaAuthUiUrl",
     });
   }
 }

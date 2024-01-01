@@ -45,6 +45,7 @@ export class AppAdminStack extends Stack {
 
     new CfnOutput(this, "lambdaAppAdminUrl", {
       value: lambdaAppAdminUrl.url,
+      exportName: "lambdaAppAdminUrl",
     });
   }
 }
