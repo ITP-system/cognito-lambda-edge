@@ -15,7 +15,7 @@ export default function ProfileForm() {
     const res = await submitContactForm(FormData);
     if (res) {
       console.log("送信完了");
-      document.contactform.reset();
+      //      document.contactform.reset();
     }
   };
 
