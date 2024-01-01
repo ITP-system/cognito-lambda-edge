@@ -43,7 +43,7 @@ export class AppUserStack extends Stack {
       invokeMode: InvokeMode.RESPONSE_STREAM,
     });
 
-    new CfnOutput(this, "lambdaAppUserUrl", {
+    new CfnOutput(this, "LambdaAppUserUrl", {
       value: lambdaAppUserUrl.url,
       exportName: "lambdaAppUserUrl",
     });

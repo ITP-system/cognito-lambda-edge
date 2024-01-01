@@ -7,6 +7,15 @@ Parameters:
     Description: System Name
     Type: String
     Default: "lambdaedge-auth"
+  LambdaAuthCheckCurrentVersionArn:
+    Description: System Name
+    Type: String
+    Default: arn:aws:lambda:us-east-1:217606627312:function:sample-dev-lambda-authcheck:25
+  LambdaAuthSigV4CurrentVersionArn:
+    Description: System Name
+    Type: String
+    Default: arn:aws:lambda:us-east-1:217606627312:function:sample-dev-lambda-authsigv4:30
+
 
 Resources:
   #-----------------------------------------------------------------------------
@@ -47,29 +56,108 @@ Resources:
       DistributionConfig:
         Comment: !Sub ${SystemName}-distribution
         Origins:
+          - DomainName: !Select [2, !Split ["/", !ImportValue lambdaAppUserUrl]] # Remove https:// from URL. 
+            Id: lambdaAppUserOrigin
+            CustomOriginConfig:
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
           - DomainName: !GetAtt S3Bucket.RegionalDomainName
             Id: S3Origin
             OriginAccessControlId: !GetAtt OAC.Id
             S3OriginConfig:
               OriginAccessIdentity: ""
+          - DomainName: !Select [2, !Split ["/", !ImportValue lambdaAuthUiUrl]] # Remove https:// from URL. 
+            Id: lambdaAuthUiOrigin
+            CustomOriginConfig:
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+          - DomainName: !Select [2, !Split ["/", !ImportValue lambdaAppAdminUrl]] # Remove https:// from URL. 
+            Id: lambdaAppAdminOrigin
+            CustomOriginConfig:
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
         Enabled: true
         DefaultRootObject: index.html
         DefaultCacheBehavior:
-          TargetOriginId: S3Origin
-          Compress: true
-          ForwardedValues:
-            QueryString: false
-            Cookies:
-              Forward: none
-          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # CachingOptimized (Recommended for S3)
+          TargetOriginId: lambdaAppUserOrigin
+          CachePolicyId: '4135ea2d-6df8-44a3-9df3-4b5a84be39ad' # CachingDisabled
+          Compress: 'true'
+          OriginRequestPolicyId: 'b689b0a8-53d0-40ab-baf2-68738e2966ac' # AllViewerExceptHostHeader
+          SmoothStreaming: 'false'
           ViewerProtocolPolicy: redirect-to-https
           AllowedMethods:
+            - DELETE
             - GET
             - HEAD
-          CachedMethods:
-            - GET
-            - HEAD
-        PriceClass: PriceClass_All
+            - OPTIONS
+            - PATCH
+            - POST
+            - PUT
+          LambdaFunctionAssociations:
+            - EventType: viewer-request
+              LambdaFunctionARN: !Ref LambdaAuthCheckCurrentVersionArn
+            - EventType: origin-request
+              LambdaFunctionARN: !Ref LambdaAuthSigV4CurrentVersionArn
+        CacheBehaviors:
+          - PathPattern: contents/*
+            TargetOriginId: S3Origin
+            Compress: true
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: none
+            CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # CachingOptimized (Recommended for S3)
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods:
+              - GET
+              - HEAD
+            CachedMethods:
+              - GET
+              - HEAD
+            LambdaFunctionAssociations:
+              - EventType: viewer-request
+                LambdaFunctionARN: !Ref LambdaAuthCheckCurrentVersionArn
+          - PathPattern: auth/*
+            TargetOriginId: lambdaAuthUiOrigin
+            CachePolicyId: '4135ea2d-6df8-44a3-9df3-4b5a84be39ad' # CachingDisabled
+            Compress: 'true'
+            OriginRequestPolicyId: 'b689b0a8-53d0-40ab-baf2-68738e2966ac' # AllViewerExceptHostHeader
+            SmoothStreaming: 'false'
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods:
+              - DELETE
+              - GET
+              - HEAD
+              - OPTIONS
+              - PATCH
+              - POST
+              - PUT
+            LambdaFunctionAssociations:
+              - EventType: viewer-request
+                LambdaFunctionARN: !Ref LambdaAuthCheckCurrentVersionArn
+              - EventType: origin-request
+                LambdaFunctionARN: !Ref LambdaAuthSigV4CurrentVersionArn
+          - PathPattern: admin/*
+            TargetOriginId: lambdaAppAdminOrigin
+            CachePolicyId: '4135ea2d-6df8-44a3-9df3-4b5a84be39ad' # CachingDisabled
+            Compress: 'true'
+            OriginRequestPolicyId: 'b689b0a8-53d0-40ab-baf2-68738e2966ac' # AllViewerExceptHostHeader
+            SmoothStreaming: 'false'
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods:
+              - DELETE
+              - GET
+              - HEAD
+              - OPTIONS
+              - PATCH
+              - POST
+              - PUT
+            LambdaFunctionAssociations:
+              - EventType: viewer-request
+                LambdaFunctionARN: !Ref LambdaAuthCheckCurrentVersionArn
+              - EventType: origin-request
+                LambdaFunctionARN: !Ref LambdaAuthSigV4CurrentVersionArn
+        PriceClass: PriceClass_200
 
   OAC:
     Type: AWS::CloudFront::OriginAccessControl
@@ -113,7 +201,7 @@ Resources:
       IdentityPoolName: "IdentityPoolName1"
 
   # 未認証ユーザ用ポリシー
-  CognitoUnauthenticatedPolicy:
+  UnauthenticatedPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: "UnauthenticatedPolicy for Cognito ID Pool."
@@ -125,8 +213,9 @@ Resources:
               - lambda:InvokeFunctionUrl
             Resource:
               - "*"
+
   # 未認証ユーザ用ロール
-  CognitoUnauthenticatedRole:
+  UnauthenticatedRole:
     Type: AWS::IAM::Role
     Properties:
       Description: "UnauthenticatedRole for Cognito ID Pool."
@@ -144,10 +233,10 @@ Resources:
               ForAnyValue:StringLike:
                 "cognito-identity.amazonaws.com:amr": unauthenticated
       ManagedPolicyArns:
-        - Ref: CognitoUnauthenticatedPolicy
+        - Ref: UnauthenticatedPolicy
 
   # 認証済ユーザ用ポリシー
-  CognitoAuthenticatedPolicy:
+  AuthenticatedPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: "AuthenticatedPolicy for Cognito ID Pool."
@@ -174,7 +263,7 @@ Resources:
               - "*"
 
   # 認証済ユーザ用ロール
-  CognitoAuthenticatedRole:
+  AuthenticatedRole:
     Type: AWS::IAM::Role
     Properties:
       Description: "AuthenticatedRole for Cognito ID Pool."
@@ -192,7 +281,7 @@ Resources:
               ForAnyValue:StringLike:
                 "cognito-identity.amazonaws.com:amr": authenticated
       ManagedPolicyArns:
-        - Ref: CognitoAuthenticatedPolicy
+        - Ref: AuthenticatedPolicy
 
   # CognitoIDプールに認証・未認証ユーザ用ロールをアタッチ
   RoleAttachment:
@@ -201,14 +290,111 @@ Resources:
       IdentityPoolId:
         Ref: IdentityPool
       Roles:
-        unauthenticated:
-          Fn::GetAtt:
-            - CognitoUnauthenticatedRole
-            - Arn
-        authenticated:
-          Fn::GetAtt:
-            - CognitoAuthenticatedRole
-            - Arn
+        authenticated: !GetAtt AuthenticatedRole.Arn
+        unauthenticated: !GetAtt UnauthenticatedRole.Arn
+      RoleMappings:
+        "default":
+          AmbiguousRoleResolution: Deny
+          IdentityProvider: !Sub cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}:${CognitoUserPoolClient}
+          Type: Token
+
+  AdminsPoolGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: Admins
+      Precedence: 0
+      RoleArn: !GetAtt AdminRole.Arn
+      UserPoolId: !Ref CognitoUserPool
+
+  UsersPoolGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: Users
+      Precedence: 5
+      RoleArn: !GetAtt UserRole.Arn
+      UserPoolId: !Ref CognitoUserPool
+
+  AdminRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "sts:AssumeRoleWithWebIdentity"
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Condition:
+              StringEquals:
+                "cognito-identity.amazonaws.com:aud":
+                  Ref: IdentityPool
+              ForAnyValue:StringLike:
+                "cognito-identity.amazonaws.com:amr": authenticated
+      Policies:
+        - PolicyName: !Sub "${SystemName}-policy-userpoolgroup-admin"
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "cognito-idp:AdminConfirmSignUp"
+                  - "cognito-idp:AdminDeleteUser"
+                  - "cognito-idp:AdminSetUserPassword"
+                  - "cognito-idp:AdminUpdateUserAttributes"
+                  - "cognito-idp:AdminAddUserToGroup"
+                  - "cognito-idp:AdminRemoveUserFromGroup"
+                  - "cognito-idp:DeleteUser"
+                  - "cognito-idp:ListUsers"
+                  - "cognito-idp:UpdateUserAttributes"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                Resource:
+                  - "*"
+      ManagedPolicyArns:
+        - Ref: AuthenticatedPolicy
+      RoleName: !Sub "${SystemName}-role-userpoolgroup-admin"
+
+  UserRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "sts:AssumeRoleWithWebIdentity"
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Condition:
+              StringEquals:
+                "cognito-identity.amazonaws.com:aud":
+                  Ref: IdentityPool
+              ForAnyValue:StringLike:
+                "cognito-identity.amazonaws.com:amr": authenticated
+      Policies:
+        - PolicyName: !Sub "${SystemName}-policy-userpoolgroup-user"
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "cognito-idp:AdminInitiateAuth"
+                  - "cognito-idp:AdminUpdateUserAttributes"
+                  - "cognito-idp:ChangePassword"
+                  - "cognito-idp:DeleteUser"
+                  - "cognito-idp:UpdateUserAttributes"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                Resource:
+                  - "*"
+      ManagedPolicyArns:
+        - Ref: AuthenticatedPolicy
+      RoleName: !Sub "${SystemName}-role-userpoolgroup-user"
 
 Outputs:
   CloudFrontDomainName:

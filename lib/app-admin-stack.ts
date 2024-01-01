@@ -43,7 +43,7 @@ export class AppAdminStack extends Stack {
       invokeMode: InvokeMode.RESPONSE_STREAM,
     });
 
-    new CfnOutput(this, "lambdaAppAdminUrl", {
+    new CfnOutput(this, "LambdaAppAdminUrl", {
       value: lambdaAppAdminUrl.url,
       exportName: "lambdaAppAdminUrl",
     });
