@@ -69,7 +69,7 @@ Resources:
             Action:
               - lambda:InvokeFunctionUrl
             Resource:
-              - "*"
+              - !ImportValue lambdaAuthUiArn
 
   UnauthenticatedRole:
     Type: AWS::IAM::Role
@@ -101,6 +101,12 @@ Resources:
           - Effect: Allow
             Action:
               - lambda:InvokeFunctionUrl
+            Resource:
+              - !ImportValue lambdaAuthUiArn
+              - !ImportValue lambdaAppUserArn
+              - !ImportValue lambdaAppAdminArn
+          - Effect: Allow
+            Action:
               - cognito-idp:ListUsers
               - cognito-idp:ListGroups
               - cognito-idp:AdminGetUser

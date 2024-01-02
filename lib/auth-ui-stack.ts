@@ -40,6 +40,11 @@ export class AuthUiStack extends Stack {
       invokeMode: InvokeMode.RESPONSE_STREAM,
     });
 
+    new CfnOutput(this, "LambdaAuthUiArn", {
+      value: lambdaAuthUi.functionArn,
+      exportName: "lambdaAuthUiArn",
+    });
+
     new CfnOutput(this, "LambdaAuthUiUrl", {
       value: lambdaAuthUiUrl.url,
       exportName: "lambdaAuthUiUrl",

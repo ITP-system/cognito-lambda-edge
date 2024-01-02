@@ -43,6 +43,11 @@ export class AppStack extends Stack {
       invokeMode: InvokeMode.RESPONSE_STREAM,
     });
 
+    new CfnOutput(this, "LambdaAppUserArn", {
+      value: lambdaAppUser.functionArn,
+      exportName: "lambdaAppUserArn",
+    });
+
     new CfnOutput(this, "LambdaAppUserUrl", {
       value: lambdaAppUserUrl.url,
       exportName: "lambdaAppUserUrl",
@@ -71,6 +76,11 @@ export class AppStack extends Stack {
     const lambdaAppAdminUrl = lambdaAppAdmin.addFunctionUrl({
       authType: FunctionUrlAuthType.NONE,
       invokeMode: InvokeMode.RESPONSE_STREAM,
+    });
+
+    new CfnOutput(this, "LambdaAppAdminArn", {
+      value: lambdaAppAdmin.functionArn,
+      exportName: "lambdaAppAdminArn",
     });
 
     new CfnOutput(this, "LambdaAppAdminUrl", {
