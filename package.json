@@ -1,5 +1,5 @@
 {
-  "name": "cognito-lambda-edge",
+  "name": "serverless",
   "version": "0.1.0",
   "bin": {
     "cognito-lambda-edge": "bin/cognito-lambda-edge.js"
