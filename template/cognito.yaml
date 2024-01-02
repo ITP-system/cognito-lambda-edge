@@ -54,7 +54,7 @@ Resources:
         unauthenticated: !GetAtt UnauthenticatedRole.Arn
       RoleMappings:
         "default":
-          AmbiguousRoleResolution: Deny
+          AmbiguousRoleResolution: AuthenticatedRole
           IdentityProvider: !Sub cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}:${UserPoolClient}
           Type: Token
 
