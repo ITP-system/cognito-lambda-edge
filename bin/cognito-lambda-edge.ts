@@ -1,11 +1,9 @@
 #!/usr/bin/env node
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
-import { AuthCheckStack } from "../lib/auth-check-stack";
-import { AuthSigV4Stack } from "../lib/auth-sigv4-stack";
+import { AuthEdgeStack } from "../lib/auth-edge-stack";
 import { AuthUiStack } from "../lib/auth-ui-stack";
-import { AppUserStack } from "../lib/app-user-stack";
-import { AppAdminStack } from "../lib/app-admin-stack";
+import { AppStack } from "../lib/app-stack";
 import { AuthChallengeStack } from "../lib/auth-challenge-stack";
 
 const app = new cdk.App();
@@ -19,14 +17,7 @@ if (stage == undefined)
 const context = app.node.tryGetContext(stage);
 if (context == undefined) throw new Error("Invalid stage.");
 
-const authCheckStack = new AuthCheckStack(app, `AuthCheckStack-${stage}`, {
-  env: {
-    account: context["env"]["account"],
-    region: "us-east-1",
-  },
-});
-
-const authSigV4Stack = new AuthSigV4Stack(app, `AuthSigV4Stack-${stage}`, {
+const authEdgeStack = new AuthEdgeStack(app, `AuthEdgeStack-${stage}`, {
   env: {
     account: context["env"]["account"],
     region: "us-east-1",
@@ -34,20 +25,6 @@ const authSigV4Stack = new AuthSigV4Stack(app, `AuthSigV4Stack-${stage}`, {
 });
 
 const authUiStack = new AuthUiStack(app, `AuthUiStack-${stage}`, {
-  env: {
-    account: context["env"]["account"],
-    region: context["env"]["region"],
-  },
-});
-
-const appUserStack = new AppUserStack(app, `AppUserStack-${stage}`, {
-  env: {
-    account: context["env"]["account"],
-    region: context["env"]["region"],
-  },
-});
-
-const appAdminStack = new AppAdminStack(app, `AppAdminStack-${stage}`, {
   env: {
     account: context["env"]["account"],
     region: context["env"]["region"],
@@ -64,3 +41,10 @@ const authChallengeStack = new AuthChallengeStack(
     },
   }
 );
+
+const appStack = new AppStack(app, `AppStack-${stage}`, {
+  env: {
+    account: context["env"]["account"],
+    region: context["env"]["region"],
+  },
+});

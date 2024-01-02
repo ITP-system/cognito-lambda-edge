@@ -1,0 +1,250 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Create Congnito for hosting a static website with Cognito authentification
+
+Parameters:
+  System:
+    Description: System Name
+    Type: String
+    Default: "serverless"
+
+  Environment:
+    Description: Enviroment Name
+    Type: String
+    Default: "dev"
+
+
+Resources:
+  #-----------------------------------------------------------------------------
+  # Cognito User pool
+  #-----------------------------------------------------------------------------
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub ${System}-userpool-${Environment}
+
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Sub ${System}
+      UserPoolId: !Ref UserPool
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub ${System}-userpool-client-${Environment}
+      UserPoolId: !Ref UserPool
+
+  IdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      AllowUnauthenticatedIdentities: true
+      CognitoIdentityProviders:
+        - ClientId: !Ref UserPoolClient
+          ProviderName: !Sub "cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}"
+      IdentityPoolName: !Sub "${System}-idpool-${Environment}"
+
+  RoleAttachment:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    Properties:
+      IdentityPoolId:
+        Ref: IdentityPool
+      Roles:
+        authenticated: !GetAtt AuthenticatedRole.Arn
+        unauthenticated: !GetAtt UnauthenticatedRole.Arn
+      RoleMappings:
+        "default":
+          AmbiguousRoleResolution: Deny
+          IdentityProvider: !Sub cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}:${UserPoolClient}
+          Type: Token
+
+  UnauthenticatedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: "policy for unauthenticated user"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - lambda:InvokeFunctionUrl
+            Resource:
+              - "*"
+
+  UnauthenticatedRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: "role for unauthenticated user"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "sts:AssumeRoleWithWebIdentity"
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Condition:
+              StringEquals:
+                "cognito-identity.amazonaws.com:aud":
+                  Ref: IdentityPool
+              ForAnyValue:StringLike:
+                "cognito-identity.amazonaws.com:amr": unauthenticated
+      ManagedPolicyArns:
+        - Ref: UnauthenticatedPolicy
+
+  AuthenticatedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: "policy for authenticated user"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - lambda:InvokeFunctionUrl
+              - cognito-idp:ListUsers
+              - cognito-idp:ListGroups
+              - cognito-idp:AdminGetUser
+              - cognito-idp:AdminCreateUser
+              - cognito-idp:AdminUpdateUserAttributes
+              - cognito-idp:AdminDeleteUser
+              - cognito-idp:AdminEnableUser
+              - cognito-idp:AdminDisableUser
+              - cognito-idp:AdminListGroupsForUser
+              - cognito-idp:AdminAddUserToGroup
+              - cognito-idp:AdminRemoveUserFromGroup
+              - ses:SendRawEmail
+              - ses:SendEmail
+            Resource:
+              - "*"
+
+  AuthenticatedRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: "role for authenticated user"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "sts:AssumeRoleWithWebIdentity"
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Condition:
+              StringEquals:
+                "cognito-identity.amazonaws.com:aud":
+                  Ref: IdentityPool
+              ForAnyValue:StringLike:
+                "cognito-identity.amazonaws.com:amr": authenticated
+      ManagedPolicyArns:
+        - Ref: AuthenticatedPolicy
+
+  AdminsPoolGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: Admins
+      Precedence: 0
+      RoleArn: !GetAtt AdminRole.Arn
+      UserPoolId: !Ref UserPool
+
+  UsersPoolGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: Users
+      Precedence: 5
+      RoleArn: !GetAtt UserRole.Arn
+      UserPoolId: !Ref UserPool
+
+  AdminRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "sts:AssumeRoleWithWebIdentity"
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Condition:
+              StringEquals:
+                "cognito-identity.amazonaws.com:aud":
+                  Ref: IdentityPool
+              ForAnyValue:StringLike:
+                "cognito-identity.amazonaws.com:amr": authenticated
+      Policies:
+        - PolicyName: !Sub "${System}-policy-userpoolgroup-admin-${Environment}"
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "cognito-idp:AdminConfirmSignUp"
+                  - "cognito-idp:AdminDeleteUser"
+                  - "cognito-idp:AdminSetUserPassword"
+                  - "cognito-idp:AdminUpdateUserAttributes"
+                  - "cognito-idp:AdminAddUserToGroup"
+                  - "cognito-idp:AdminRemoveUserFromGroup"
+                  - "cognito-idp:DeleteUser"
+                  - "cognito-idp:ListUsers"
+                  - "cognito-idp:UpdateUserAttributes"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                Resource:
+                  - "*"
+      ManagedPolicyArns:
+        - Ref: AuthenticatedPolicy
+      RoleName: !Sub "${System}-role-userpoolgroup-admin-${Environment}"
+
+  UserRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "sts:AssumeRoleWithWebIdentity"
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Condition:
+              StringEquals:
+                "cognito-identity.amazonaws.com:aud":
+                  Ref: IdentityPool
+              ForAnyValue:StringLike:
+                "cognito-identity.amazonaws.com:amr": authenticated
+      Policies:
+        - PolicyName: !Sub "${System}-policy-userpoolgroup-user-${Environment}"
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "cognito-idp:AdminInitiateAuth"
+                  - "cognito-idp:AdminUpdateUserAttributes"
+                  - "cognito-idp:ChangePassword"
+                  - "cognito-idp:DeleteUser"
+                  - "cognito-idp:UpdateUserAttributes"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                Resource:
+                  - "*"
+      ManagedPolicyArns:
+        - Ref: AuthenticatedPolicy
+      RoleName: !Sub "${System}-role-userpoolgroup-user-${Environment}"
+
+Outputs:
+  UserPool:
+    Value: !Ref UserPool
+    Export:
+      Name: !Sub ${System}-userpool-${Environment}
+  UserPoolClient:
+    Value: !Ref UserPoolClient
+    Export:
+      Name: !Sub ${System}-userpool-client-${Environment}
+  UserPoolDomain:
+    Value: !Ref UserPoolDomain
+    Export:
+      Name: !Sub ${System}-userpool-domain-${Environment}
