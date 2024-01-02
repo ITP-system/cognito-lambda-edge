@@ -1,0 +1,175 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Create an S3 bucket and CloudFront (OAC) for hosting a static website with Cognito authentification
+
+Parameters:
+  System:
+    Description: System Name
+    Type: String
+    Default: "serverless"
+  LambdaAuthCheckCurrentVersionArn:
+    Description: System Name
+    Type: String
+    Default: arn:aws:lambda:us-east-1:123456789012:function:serverless-dev-lambda-authcheck:2
+  LambdaAuthSigV4CurrentVersionArn:
+    Description: System Name
+    Type: String
+    Default: arn:aws:lambda:us-east-1:123456789012:function:serverless-dev-lambda-authsigv4:2
+
+
+Resources:
+  #-----------------------------------------------------------------------------
+  # S3 bucket
+  #-----------------------------------------------------------------------------
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${System}-bucket
+      Tags:
+        - Key: Name
+          Value: !Sub ${System}-bucket
+
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - s3:GetObject
+            Effect: Allow
+            Resource:
+              - !Sub arn:aws:s3:::${S3Bucket}/*
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}
+
+  #-----------------------------------------------------------------------------
+  # CloudFront
+  #-----------------------------------------------------------------------------
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: !Sub ${System}-distribution
+        Origins:
+          - DomainName: !Select [2, !Split ["/", !ImportValue lambdaAppUserUrl]] # Remove https:// from URL. 
+            Id: lambdaAppUserOrigin
+            CustomOriginConfig:
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+          - DomainName: !GetAtt S3Bucket.RegionalDomainName
+            Id: S3Origin
+            OriginAccessControlId: !GetAtt OAC.Id
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+          - DomainName: !Select [2, !Split ["/", !ImportValue lambdaAuthUiUrl]] # Remove https:// from URL. 
+            Id: lambdaAuthUiOrigin
+            CustomOriginConfig:
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+          - DomainName: !Select [2, !Split ["/", !ImportValue lambdaAppAdminUrl]] # Remove https:// from URL. 
+            Id: lambdaAppAdminOrigin
+            CustomOriginConfig:
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+        Enabled: true
+        DefaultRootObject: index.html
+        DefaultCacheBehavior:
+          TargetOriginId: lambdaAppUserOrigin
+          CachePolicyId: '4135ea2d-6df8-44a3-9df3-4b5a84be39ad' # CachingDisabled
+          Compress: 'true'
+          OriginRequestPolicyId: 'b689b0a8-53d0-40ab-baf2-68738e2966ac' # AllViewerExceptHostHeader
+          SmoothStreaming: 'false'
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - DELETE
+            - GET
+            - HEAD
+            - OPTIONS
+            - PATCH
+            - POST
+            - PUT
+          LambdaFunctionAssociations:
+            - EventType: viewer-request
+              LambdaFunctionARN: !Ref LambdaAuthCheckCurrentVersionArn
+            - EventType: origin-request
+              LambdaFunctionARN: !Ref LambdaAuthSigV4CurrentVersionArn
+        CacheBehaviors:
+          - PathPattern: contents*
+            TargetOriginId: S3Origin
+            Compress: true
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: none
+            CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # CachingOptimized (Recommended for S3)
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods:
+              - GET
+              - HEAD
+            CachedMethods:
+              - GET
+              - HEAD
+            LambdaFunctionAssociations:
+              - EventType: viewer-request
+                LambdaFunctionARN: !Ref LambdaAuthCheckCurrentVersionArn
+          - PathPattern: auth*
+            TargetOriginId: lambdaAuthUiOrigin
+            CachePolicyId: '4135ea2d-6df8-44a3-9df3-4b5a84be39ad' # CachingDisabled
+            Compress: 'true'
+            OriginRequestPolicyId: 'b689b0a8-53d0-40ab-baf2-68738e2966ac' # AllViewerExceptHostHeader
+            SmoothStreaming: 'false'
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods:
+              - DELETE
+              - GET
+              - HEAD
+              - OPTIONS
+              - PATCH
+              - POST
+              - PUT
+            LambdaFunctionAssociations:
+              - EventType: origin-request
+                LambdaFunctionARN: !Ref LambdaAuthSigV4CurrentVersionArn
+          - PathPattern: admin*
+            TargetOriginId: lambdaAppAdminOrigin
+            CachePolicyId: '4135ea2d-6df8-44a3-9df3-4b5a84be39ad' # CachingDisabled
+            Compress: 'true'
+            OriginRequestPolicyId: 'b689b0a8-53d0-40ab-baf2-68738e2966ac' # AllViewerExceptHostHeader
+            SmoothStreaming: 'false'
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods:
+              - DELETE
+              - GET
+              - HEAD
+              - OPTIONS
+              - PATCH
+              - POST
+              - PUT
+            LambdaFunctionAssociations:
+              - EventType: viewer-request
+                LambdaFunctionARN: !Ref LambdaAuthCheckCurrentVersionArn
+              - EventType: origin-request
+                LambdaFunctionARN: !Ref LambdaAuthSigV4CurrentVersionArn
+        PriceClass: PriceClass_200
+
+  OAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Description: Access Control
+        Name: !Sub ${System}-oac
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+
+Outputs:
+  CloudFrontDomainName:
+    Value: !GetAtt CloudFrontDistribution.DomainName
+    Export:
+      Name: !Sub ${System}-domain-name
