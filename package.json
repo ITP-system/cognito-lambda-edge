@@ -2,7 +2,7 @@
   "name": "serverless",
   "version": "0.1.0",
   "bin": {
-    "cognito-lambda-edge": "bin/cognito-lambda-edge.js"
+    "serverless": "bin/serverless.js"
   },
   "scripts": {
     "build": "tsc",
