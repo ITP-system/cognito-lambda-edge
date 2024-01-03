@@ -27,43 +27,34 @@ Hosted UI を使わずに ログインページを独自に開発する場合の
 
 - ログイン画面 にリダイレクトさせる
 
-## サンプル構成
-
-以下の構成をサンプルとして用意してあります
-
-![](./s3-cloudfront-cognito.drawio.png)
-
-- S3 Bucket
-  - AWS::S3::Bucket
-  - AWS::S3::BucketPolicy
-- CloudFront (OAC)
-  - AWS::CloudFront::Distribution
-  - AWS::CloudFront::OriginAccessControl
-- Authentification
-  - AWS::Cognito::UserPool
-  - AWS::Cognito::UserPoolDomain
-  - AWS::Cognito::UserPoolClient
-- Lambda@Edge for cognito-at-edge
-  - AWS::Lambda::Function
-  - AWS::IAM::Role
-
-```
-$ aws cloudformation deploy --template ./s3-cloudfront-cognito.yaml --stack-name cognito-lambda-edge --capabilities CAPABILITY_NAMED_IAM
-```
-
 ## デプロイ
 
-- `cdk deploy -c stage=dev --all` deploy this stack to your default AWS account/region
+- Cognito の 作成
 
-- AWS Console in us-east-1 -> Lambda -> "${SystemName}-lambda-edge"
-- Add trigger
-  - Source: CloudFront
-  - Deploy to Lambda@Edge
-- Configure new CloudFront trigger
-  - Distribution: "${SystemName}-distribution"
-  - Cache behavior: \*
-  - CloudFront event: Viewer request
-  - Confirm deploy to Lambda@Edge: checked
+  ```
+  $ aws cloudformation deploy --template ./template/cognito.yaml --stack-name AuthCognitoStack-dev --capabilities CAPABILITY_NAMED_IAM
+  ```
+
+- Lambda Edge、ログイン画面、アプリケーションのデプロイ
+
+  Cognito のユーザプール id などを cdk.json に設定して、デプロイします
+
+  `cdk deploy -c stage=dev --all`
+
+- CloudFront の 作成
+
+  Lambda edge のバージョン指定を入力して CloudFront をデプロイします。
+
+  ```
+  $ aws cloudformation deploy --template ./template/contents.yaml --stack-name AuthContentsStack-dev --capabilities CAPABILITY_NAMED_IAM
+  ```
+
+## 削除
+
+- CloudFront から Lambda Edge の登録をはずします
+- CloudFront のスタックを削除します
+- `cdk destroy -c stage=dev --all`で Lambda などを削除します
+- Cognito のスタックを削除します
 
 ## 補足
 
