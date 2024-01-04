@@ -43,8 +43,10 @@ export default function CreateUserForm() {
   const formActions = async (FormData: FormData) => {
     const res = await userCreateFormAction(FormData);
 
-    if (res) {
+    if (res === true) {
       redirect("/user");
+    } else {
+      throw new Error(res);
     }
   };
 

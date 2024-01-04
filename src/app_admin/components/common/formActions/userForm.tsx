@@ -97,7 +97,7 @@ export const userCreateFormAction = async (FormData: FormData) => {
   } catch (error) {
     console.error(error);
 
-    return false;
+    return String(error);
   }
 };
 
@@ -143,7 +143,7 @@ export const userEditFormAction = async (user_name: string, email: string) => {
   } catch (error) {
     console.error(error);
 
-    return false;
+    return String(error);
   }
 };
 
