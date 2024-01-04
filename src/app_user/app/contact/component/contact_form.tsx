@@ -13,9 +13,13 @@ import { submitContactForm } from "@/components/common/formActions/contactForm";
 export default function ProfileForm() {
   const formActions = async (FormData: FormData) => {
     const res = await submitContactForm(FormData);
+    const formreset = document.getElementById(
+      "contact-form"
+    ) as HTMLFormElement;
+
     if (res) {
       console.log("送信完了");
-      //      document.contactform.reset();
+      formreset.reset();
     }
   };
 
@@ -37,6 +41,7 @@ export default function ProfileForm() {
           action={async (FormData: FormData) => {
             await formActions(FormData);
           }}
+          id="contact-form"
         >
           <div className="py-3">
             <Label htmlFor="address">mail address</Label>

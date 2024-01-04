@@ -37,7 +37,7 @@ export const getUserListAction = async () => {
 
   try {
     const response = await cognitoClient.send(
-      new ListUsersCommand({ UserPoolId: process.env.USER_POOL_ID })
+      new ListUsersCommand({ UserPoolId: process.env.USER_POOL_ID }),
     );
 
     // キャッシュ無効化
