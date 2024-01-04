@@ -54,6 +54,7 @@ export const submitContactForm = async (FormData: FormData) => {
     return true;
   } catch (error) {
     console.error(error);
-    return false;
+
+    return String(error);
   }
 };

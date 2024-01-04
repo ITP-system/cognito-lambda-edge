@@ -17,9 +17,11 @@ export default function ProfileForm() {
       "contact-form"
     ) as HTMLFormElement;
 
-    if (res) {
+    if (res === true) {
       console.log("送信完了");
       formreset.reset();
+    } else {
+      throw new Error(res);
     }
   };
 
