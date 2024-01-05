@@ -53,8 +53,20 @@ export const getUserListAction = async () => {
   }
 };
 
+type Result =
+  | {
+      success: true;
+      message: string;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
 // ユーザー作成
-export const userCreateFormAction = async (FormData: FormData) => {
+export const userCreateFormAction = async (
+  FormData: FormData,
+): Promise<Result> => {
   const idToken = getIdToken(cookies);
 
   const cognitoClient = new CognitoIdentityProviderClient({
@@ -77,6 +89,7 @@ export const userCreateFormAction = async (FormData: FormData) => {
   const requestData = {
     UserPoolId: process.env.USER_POOL_ID,
     Username: String(expendUserName),
+    email_verified: true,
     UserAttributes: [
       {
         Name: "email",
@@ -93,16 +106,25 @@ export const userCreateFormAction = async (FormData: FormData) => {
     // fetchキャッシュの再検証
     revalidatePath("/admin/user");
 
-    return true;
-  } catch (error) {
-    console.error(error);
+    return {
+      success: true,
+      message: "success!!",
+    };
+  } catch (e: unknown) {
+    console.error(e);
 
-    return String(error);
+    return {
+      success: false,
+      error: String(e),
+    };
   }
 };
 
 // ユーザー更新
-export const userEditFormAction = async (user_name: string, email: string) => {
+export const userEditFormAction = async (
+  user_name: string,
+  email: string,
+): Promise<Result> => {
   const idToken = getIdToken(cookies);
 
   const cognitoClient = new CognitoIdentityProviderClient({
@@ -139,11 +161,17 @@ export const userEditFormAction = async (user_name: string, email: string) => {
     // fetchキャッシュの再検証
     revalidatePath("/admin/user");
 
-    return true;
-  } catch (error) {
-    console.error(error);
+    return {
+      success: true,
+      message: "success!!",
+    };
+  } catch (e: unknown) {
+    console.error(e);
 
-    return String(error);
+    return {
+      success: false,
+      error: String(e),
+    };
   }
 };
 
