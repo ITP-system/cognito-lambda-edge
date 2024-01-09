@@ -1,5 +1,8 @@
 "use client";
 
+// next.js
+import { useState } from "react";
+
 // shadcn ui
 import { Button } from "@/components/ui/button";
 
@@ -11,17 +14,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { submitContactForm } from "@/components/common/formActions/contactForm";
 
 export default function ProfileForm() {
+  const [profileError, serProfileError] = useState<string | null>(null);
   const formActions = async (FormData: FormData) => {
     const res = await submitContactForm(FormData);
     const formreset = document.getElementById(
       "contact-form"
     ) as HTMLFormElement;
 
-    if (res === true) {
-      console.log("送信完了");
+    if (res.success === true) {
       formreset.reset();
     } else {
-      throw new Error(res);
+      serProfileError(res.error);
     }
   };
 
@@ -74,6 +77,12 @@ export default function ProfileForm() {
             </Button>
           </div>
         </form>
+
+        {profileError ? (
+          <p className="relative left-0 mt-2 text-sm text-red-500">
+            {profileError}
+          </p>
+        ) : null}
       </div>
     </>
   );

@@ -10,8 +10,20 @@ import { SES, SendRawEmailCommand } from "@aws-sdk/client-ses";
 // nodemailer
 import nodemailer from "nodemailer";
 
+type Result =
+  | {
+      success: true;
+      message: string;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
 // submit
-export const submitContactForm = async (FormData: FormData) => {
+export const submitContactForm = async (
+  FormData: FormData
+): Promise<Result> => {
   const toAddress = String(FormData.get("address"));
   const title = String(FormData.get("title"));
   const text = String(FormData.get("text"));
@@ -51,10 +63,16 @@ export const submitContactForm = async (FormData: FormData) => {
 
   try {
     await transporter.sendMail(input);
-    return true;
-  } catch (error) {
-    console.error(error);
 
-    return String(error);
+    return {
+      success: true,
+      message: "success!!",
+    };
+  } catch (e: unknown) {
+    console.error(e);
+    return {
+      success: false,
+      error: String(e),
+    };
   }
 };
