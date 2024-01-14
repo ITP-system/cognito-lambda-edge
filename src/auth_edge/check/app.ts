@@ -18,6 +18,11 @@ const config = {
   cloudFrontDomain: __CLOUD_FRONT_DOMAIN__,
 };
 
+/**
+ * Cognitoで認証したユーザーであるか検証します
+ * @param event
+ * @returns
+ */
 export const handler: CloudFrontRequestHandler = async (event) => {
   const request = event.Records[0].cf.request;
   const requestUri = request.uri;
@@ -31,8 +36,41 @@ export const handler: CloudFrontRequestHandler = async (event) => {
       config.userPoolAppId
     );
 
+    if (Object.keys(cookies).length === 0) {
+      const response = {
+        status: "302",
+        statusDescription: "Temporary Redirect",
+        headers: {
+          location: [
+            {
+              key: "location",
+              value: `https://${config.cloudFrontDomain}/auth/login?redirectUrl=${requestUri}`,
+            },
+          ],
+        },
+      };
+
+      return response;
+    }
     if (!cookies.idToken) {
-      throw new Error("No ID token present in cookies.");
+      const response = {
+        status: "302",
+        statusDescription: "Temporary Redirect",
+        headers: {
+          location: [
+            {
+              key: "location",
+              value: `https://${config.cloudFrontDomain}/auth/login?redirectUrl=${requestUri}`,
+            },
+          ],
+          "set-cookie": generateCookieResetHeaders(
+            request.headers,
+            config.userPoolAppId
+          ),
+        },
+      };
+
+      return response;
     }
 
     const verifier = CognitoJwtVerifier.create({
@@ -54,7 +92,24 @@ export const handler: CloudFrontRequestHandler = async (event) => {
       );
 
       if (!newTokens) {
-        throw new Error("No new tokens");
+        const response = {
+          status: "302",
+          statusDescription: "Temporary Redirect",
+          headers: {
+            location: [
+              {
+                key: "location",
+                value: `https://${config.cloudFrontDomain}/auth/login?redirectUrl=${requestUri}`,
+              },
+            ],
+            "set-cookie": generateCookieClearHeaders(
+              cookies.idToken,
+              config.userPoolAppId
+            ),
+          },
+        };
+
+        return response;
       }
 
       logger.debug("New tokens", { custom_key: newTokens });
@@ -67,7 +122,7 @@ export const handler: CloudFrontRequestHandler = async (event) => {
             {
               key: "location",
               value: requestQueryString
-                ? `https://${config.cloudFrontDomain}${requestUri}/?${requestQueryString}`
+                ? `https://${config.cloudFrontDomain}${requestUri}?${requestQueryString}`
                 : `https://${config.cloudFrontDomain}${requestUri}`,
             },
           ],
@@ -85,23 +140,11 @@ export const handler: CloudFrontRequestHandler = async (event) => {
       return response;
     }
   } catch (error) {
-    //TODO idトークンがクッキーにない場合 と リフレッシュトークンによる再発行でidトークンが取得できない場合に リダイレクトするが、
-    // クッキーのクリアの処理を変えるか検討する
-    //TODO requestUriをloginのquerystringに設定するようにする
     logger.error(`${error.message} with a custom key`, { custome_key: error });
 
     const response = {
-      status: "302",
-      statusDescription: "Temporary Redirect",
-      headers: {
-        location: [
-          {
-            key: "location",
-            value: `https://${config.cloudFrontDomain}/auth/login`,
-          },
-        ],
-        "set-cookie": generateCookieClearHeaders(config.userPoolAppId),
-      },
+      status: "403",
+      statusDescription: "Forbidden",
     };
 
     return response;
@@ -121,9 +164,10 @@ export function extractAndParseCookies(
   const keyPrefix = `CognitoIdentityServiceProvider.${clientId}`;
   const lastUserKey = `${keyPrefix}.LastAuthUser`;
 
-  if (!headers["cookie"]) {
+  if (!headers.hasOwnProperty("cookie")) {
     return {};
   }
+
   const cookies = headers["cookie"].reduce(
     (reduced, header) => Object.assign(reduced, parse(header.value)),
     {} as Cookies
@@ -253,7 +297,7 @@ function generateCookieHeaders(
  * @returns
  */
 function generateCookieClearHeaders(idToken: string, client_id: string) {
-  const expire = new Date(Date.now() + 365 * 864e5);
+  const expire = new Date();
 
   const keyPrefix = `CognitoIdentityServiceProvider.${client_id}`;
   const lastUserKey = `${keyPrefix}.LastAuthUser`;
@@ -277,6 +321,38 @@ function generateCookieClearHeaders(idToken: string, client_id: string) {
     [cookieNames.accessTokenKey]: `Path=/; Secure; Expires=${expire.toUTCString()}`,
     [cookieNames.refreshTokenKey]: `Path=/; Secure; Expires=${expire.toUTCString()}`,
   });
+
+  // Return cookie object in format of CloudFront headers
+  return Object.entries({
+    ...cookies,
+  }).map(([k, v]) => ({ key: "set-cookie", value: `${k}=${v}` }));
+}
+
+/**
+ * Cookieヘッダーをリセットする
+ * @param headers CloudFront ヘッダー
+ * @param clientId Cognito クライアントID
+ * @returns
+ */
+function generateCookieResetHeaders(
+  headers: CloudFrontHeaders,
+  client_id: string
+) {
+  const expire = new Date();
+  const keyPrefix = `CognitoIdentityServiceProvider.${client_id}`;
+
+  const cookies = headers["cookie"].reduce(
+    (reduced, header) => Object.assign(reduced, parse(header.value)),
+    {} as Cookies
+  );
+
+  for (const [key] of Object.entries(cookies)) {
+    if (key.startsWith(keyPrefix)) {
+      cookies[key] = `Path=/; Secure; Expires=${expire.toUTCString()}`;
+    }
+  }
+
+  logger.debug("reset cookies", { custom_key: cookies });
 
   // Return cookie object in format of CloudFront headers
   return Object.entries({
