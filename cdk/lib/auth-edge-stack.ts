@@ -66,7 +66,7 @@ export class AuthEdgeStack extends Stack {
       runtime: Runtime.NODEJS_18_X,
       bundling: {
         minify: true,
-        target: "es2020",
+        target: "es2022",
         define: {
           __USER_POOL_ID__: JSON.stringify(context["userPoolId"]),
           __USER_POOL_APP_ID__: JSON.stringify(context["userPoolAppId"]),
@@ -100,7 +100,7 @@ export class AuthEdgeStack extends Stack {
       runtime: Runtime.NODEJS_18_X,
       bundling: {
         minify: true,
-        target: "es2020",
+        target: "es2022",
         define: {
           __USER_POOL_ID__: JSON.stringify(context["userPoolId"]),
           __USER_POOL_APP_ID__: JSON.stringify(context["userPoolAppId"]),
