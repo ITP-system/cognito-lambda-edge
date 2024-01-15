@@ -18,7 +18,7 @@ export class AuthChallengeStack extends Stack {
       {
         architecture: Architecture.ARM_64,
         awsSdkConnectionReuse: false,
-        entry: "src/auth_challenge/define/app.js",
+        entry: "../src/auth_challenge/define/app.js",
         functionName: `${system}-${stage}-lambda-authchallenge-define`,
         handler: "handler",
         logRetention: RetentionDays.ONE_MONTH,
@@ -32,7 +32,7 @@ export class AuthChallengeStack extends Stack {
       {
         architecture: Architecture.ARM_64,
         awsSdkConnectionReuse: false,
-        entry: "src/auth_challenge/create/app.js",
+        entry: "../src/auth_challenge/create/app.js",
         functionName: `${system}-${stage}-lambda-authchallenge-create`,
         handler: "handler",
         logRetention: RetentionDays.ONE_MONTH,
@@ -46,7 +46,7 @@ export class AuthChallengeStack extends Stack {
       {
         architecture: Architecture.ARM_64,
         awsSdkConnectionReuse: false,
-        entry: "src/auth_challenge/verify/app.js",
+        entry: "../src/auth_challenge/verify/app.js",
         functionName: `${system}-${stage}-lambda-authchallenge-verify`,
         handler: "handler",
         logRetention: RetentionDays.ONE_MONTH,

@@ -59,7 +59,7 @@ export class AuthEdgeStack extends Stack {
       currentVersionOptions: {
         removalPolicy: RemovalPolicy.RETAIN,
       },
-      entry: "src/auth_edge/check/app.ts",
+      entry: "../src/auth_edge/check/app.ts",
       functionName: `${system}-${stage}-lambda-authcheck`,
       handler: "handler",
       logRetention: RetentionDays.ONE_MONTH,
@@ -92,7 +92,7 @@ export class AuthEdgeStack extends Stack {
       currentVersionOptions: {
         removalPolicy: RemovalPolicy.RETAIN,
       },
-      entry: "src/auth_edge/sigv4/app.ts",
+      entry: "../src/auth_edge/sigv4/app.ts",
       functionName: `${system}-${stage}-lambda-authsigv4`,
       handler: "handler",
       logRetention: RetentionDays.ONE_MONTH,

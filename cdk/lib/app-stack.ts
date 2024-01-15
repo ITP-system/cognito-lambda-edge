@@ -20,7 +20,7 @@ export class AppStack extends Stack {
 
     const lambdaAppUser = new DockerImageFunction(this, "LambdaAppUser", {
       architecture: Architecture.ARM_64,
-      code: DockerImageCode.fromImageAsset("src/app_user/", {
+      code: DockerImageCode.fromImageAsset("../src/app_user/", {
         buildArgs: {
           USER_POOL_ID: context["userPoolId"],
           USER_POOL_APP_ID: context["userPoolAppId"],
@@ -55,7 +55,7 @@ export class AppStack extends Stack {
 
     const lambdaAppAdmin = new DockerImageFunction(this, "LambdaAppAdmin", {
       architecture: Architecture.ARM_64,
-      code: DockerImageCode.fromImageAsset("src/app_admin/", {
+      code: DockerImageCode.fromImageAsset("../src/app_admin/", {
         buildArgs: {
           USER_POOL_ID: context["userPoolId"],
           USER_POOL_APP_ID: context["userPoolAppId"],

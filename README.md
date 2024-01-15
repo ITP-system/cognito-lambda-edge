@@ -39,7 +39,7 @@ Hosted UI を使わずに ログインページを独自に開発する場合の
 
   Cognito のユーザプール id などを cdk.json に設定して、デプロイします
 
-  `cdk deploy -c stage=dev --all`
+  `npm --prefix ./cdk run cdk deploy -c stage=dev --all  `
 
 - CloudFront の 作成
 

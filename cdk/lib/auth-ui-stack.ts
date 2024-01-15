@@ -20,7 +20,7 @@ export class AuthUiStack extends Stack {
 
     const lambdaAuthUi = new DockerImageFunction(this, "LambdaAuthUi", {
       architecture: Architecture.ARM_64,
-      code: DockerImageCode.fromImageAsset("src/auth_ui/", {
+      code: DockerImageCode.fromImageAsset("../src/auth_ui/", {
         buildArgs: {
           CLOUD_FRONT_DOMAIN: context["cloudFrontDomain"],
         },

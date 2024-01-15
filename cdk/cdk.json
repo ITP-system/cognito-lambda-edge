@@ -20,6 +20,7 @@
       "userPoolId": "ap-northeast-1_xxxxxxxxx",
       "userPoolAppId": "xxxxxxxxxxxxxxxxxxxxxxxxxx",
       "userPoolDomain": "xxxxxxxx.auth.ap-northeast-1.amazoncognito.com",
+      "identityPoolId": "ap-northeast-1:b7d08796-427e-4f02-8a38-xxxxxxssssssss",
       "cloudfrontDomain": "xxxxxxxxx.cloudfront.net",
       "env": {
         "account": "xxxxxxxxxx",
