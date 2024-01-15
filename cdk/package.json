@@ -9,7 +9,7 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "cdk-all": "cdk deploy -c stage=dev --all"
+    "cdk:deploy-all": "cdk deploy -c stage=dev --all"
   },
   "devDependencies": {
     "@types/jest": "^29.5.5",

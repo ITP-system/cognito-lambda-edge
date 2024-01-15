@@ -1,5 +1,5 @@
 {
   "scripts": {
-    "cdk": "npm --prefix ./cdk run cdk deploy -c stage=dev --all"
+    "cdk:deploy-all": "npm --prefix ./cdk run cdk:deploy-all"
   }
 }
