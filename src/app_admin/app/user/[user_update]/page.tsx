@@ -11,6 +11,7 @@ import { fromCognitoIdentityPool } from "@aws-sdk/credential-providers";
 import {
   CognitoIdentityProviderClient,
   AdminGetUserCommand,
+  AdminListGroupsForUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
 export const metadata: Metadata = {
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 async function getData(idToken: any, user_update: string) {
-  const cognitoClient = new CognitoIdentityProviderClient({
+  const config = {
     region: "ap-northeast-1",
     credentials: fromCognitoIdentityPool({
       clientConfig: {
@@ -31,17 +32,36 @@ async function getData(idToken: any, user_update: string) {
           idToken,
       },
     }),
-  });
+  };
 
-  const response = await cognitoClient.send(
+  const cognitoClient = new CognitoIdentityProviderClient(config);
+
+  // ユーザー情報を取得
+  const UserResponse = await cognitoClient.send(
     new AdminGetUserCommand({
       UserPoolId: process.env.USER_POOL_ID,
       Username: user_update,
     }),
   );
 
-  return response;
-  //return data;
+  // ユーザーが所属しているグループを取得
+  const UserGroups: string[] = [];
+  await cognitoClient
+    .send(
+      new AdminListGroupsForUserCommand({
+        UserPoolId: process.env.USER_POOL_ID,
+        Username: user_update,
+      }),
+    )
+    .then((res: any) => {
+      if (res.Groups.length > 0) {
+        for (let i = 0; i < res.Groups.length; i++) {
+          UserGroups.push(res.Groups[i].GroupName);
+        }
+      }
+    });
+
+  return { User: UserResponse, Groups: UserGroups };
 }
 
 type AttributesType = {
@@ -54,13 +74,17 @@ const Edit = async ({ params }: { params: { user_update: string } }) => {
 
   const data: any = await getData(idToken, params.user_update);
 
-  const email = data.UserAttributes.find((item: AttributesType) => {
+  const email = data.User.UserAttributes.find((item: AttributesType) => {
     return item.Name == "email" && item.Value;
   });
 
   return (
     <div>
-      <UserEdit username={data.Username} email={email.Value} />
+      <UserEdit
+        username={data.User.Username}
+        email={email.Value}
+        usergroups={data.Groups}
+      />
     </div>
   );
 };

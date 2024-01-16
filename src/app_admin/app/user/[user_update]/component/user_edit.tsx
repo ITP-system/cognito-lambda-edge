@@ -23,33 +23,55 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+
+type EditUserFormType = {
+  username: string;
+  email: string;
+  usergroups: string[];
+};
 
 const formSchema = z.object({
   userEmail: z.string().min(2, {
     message: "userName must be at least 2 characters.",
   }),
-  groupItems: z
-    .array(z.string())
-    .refine((value) => value.some((item) => item), {
-      message: "You have to select at least one item.",
-    }),
+  userGroup: z.array(z.string()).refine((value) => value.some((item) => item), {
+    message: "You have to select at least one item.",
+  }),
 });
 
-export default function EditUserForm({ username, email }: any) {
+export default function EditUserForm({
+  username,
+  email,
+  usergroups,
+}: EditUserFormType) {
   const [userEditError, setUserEditError] = useState<string | null>(null);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+
     defaultValues: {
       userEmail: email,
+      userGroup: usergroups,
     },
   });
 
-  const formActions = async (FormData: FormData) => {
-    const email_update = FormData.get("userEmail");
+  const userGroupItems = [
+    {
+      id: "Admins",
+      label: "Admins",
+    },
+    {
+      id: "Users",
+      label: "Users",
+    },
+  ];
 
+  const formActions = async (FormData: FormData) => {
     const res = await userEditFormAction(
       String(username),
-      String(email_update),
+      FormData,
+      usergroups,
     );
 
     if (res.success === true) {
@@ -103,6 +125,57 @@ export default function EditUserForm({ username, email }: any) {
                 )}
               />
 
+              <FormField
+                control={form.control}
+                name="userGroup"
+                render={() => (
+                  <FormItem>
+                    <div className="my-3">
+                      <FormLabel className="text-sm">
+                        ユーザーグループ
+                      </FormLabel>
+                    </div>
+                    {userGroupItems.map((item) => (
+                      <FormField
+                        key={item.id}
+                        control={form.control}
+                        name="userGroup"
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              key={item.id}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  name="userGroup"
+                                  value={item.id}
+                                  checked={field.value?.includes(item.id)}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([
+                                          ...field.value,
+                                          item.id,
+                                        ])
+                                      : field.onChange(
+                                          field.value?.filter(
+                                            (value) => value !== item.id,
+                                          ),
+                                        );
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="text-sm font-normal">
+                                {item.label}
+                              </FormLabel>
+                            </FormItem>
+                          );
+                        }}
+                      />
+                    ))}
+                  </FormItem>
+                )}
+              />
               <div className="mt-8">
                 <Button type="submit" className="w-full">
                   更新

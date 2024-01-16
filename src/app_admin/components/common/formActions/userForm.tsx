@@ -15,6 +15,8 @@ import {
   AdminUpdateUserAttributesCommand,
   AdminCreateUserCommand,
   AdminDeleteUserCommand,
+  AdminAddUserToGroupCommand,
+  AdminRemoveUserFromGroupCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
 // ユーザー一覧取得
@@ -120,11 +122,15 @@ export const userCreateFormAction = async (
   }
 };
 
-// ユーザー更新
+// ユーザー更新・ユーザーグループ更新
 export const userEditFormAction = async (
   user_name: string,
-  email: string,
+  FormData: FormData,
+  BeforeGroups: string[],
 ): Promise<Result> => {
+  const email: FormDataEntryValue | null = FormData.get("userEmail");
+  const email_groupItems: FormDataEntryValue[] = FormData.getAll("userGroup");
+
   const idToken = getIdToken(cookies);
 
   const cognitoClient = new CognitoIdentityProviderClient({
@@ -147,13 +153,28 @@ export const userEditFormAction = async (
     UserAttributes: [
       {
         Name: "email",
-        Value: email,
+        Value: String(email),
       },
     ],
     MessageAction: "RESEND",
   };
 
   try {
+    // ユーザーグループ追加
+    await userGroupsAdd(
+      BeforeGroups,
+      email_groupItems,
+      user_name,
+      cognitoClient,
+    );
+    // ユーザーグループ削除
+    await userGroupsDelete(
+      email_groupItems,
+      BeforeGroups,
+      user_name,
+      cognitoClient,
+    );
+    // ユーザー更新
     await cognitoClient.send(new AdminUpdateUserAttributesCommand(requestData));
 
     // キャッシュ無効化
@@ -172,6 +193,49 @@ export const userEditFormAction = async (
       success: false,
       error: String(e),
     };
+  }
+};
+
+// ユーザーグループ追加
+const userGroupsAdd = async (
+  originalArray: string[],
+  checkedArrayItems: any[],
+  user_name: string,
+  cognitoClient: CognitoIdentityProviderClient,
+) => {
+  const originalArraySet = new Set(originalArray);
+  for (let i = 0; i < checkedArrayItems.length; i++) {
+    if (originalArraySet.has(checkedArrayItems[i]) == false) {
+      console.log(checkedArrayItems[i]);
+      await cognitoClient.send(
+        new AdminAddUserToGroupCommand({
+          UserPoolId: process.env.USER_POOL_ID,
+          Username: user_name,
+          GroupName: String(checkedArrayItems[i]),
+        }),
+      );
+    }
+  }
+};
+
+// ユーザーグループ削除
+const userGroupsDelete = async (
+  checkedArrayItems: any[],
+  originalArray: any[],
+  user_name: string,
+  cognitoClient: CognitoIdentityProviderClient,
+) => {
+  const checkedArrayItemsSet = new Set(checkedArrayItems);
+  for (let i = 0; i < originalArray.length; i++) {
+    if (checkedArrayItemsSet.has(originalArray[i]) == false) {
+      await cognitoClient.send(
+        new AdminRemoveUserFromGroupCommand({
+          UserPoolId: process.env.USER_POOL_ID,
+          Username: user_name,
+          GroupName: String(originalArray[i]),
+        }),
+      );
+    }
   }
 };
 
